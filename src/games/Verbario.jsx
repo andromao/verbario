@@ -1,8 +1,19 @@
 import { useState, useEffect, useRef } from "react";
 import { doc, getDoc, setDoc, collection, query, orderBy, limit, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
+import { isExpertUnlocked, unlockExpert } from "../utils/progress";
+
+const GAME_ID = "verbario";
 
 const BANK = [
+  { word: "cat", pos: "n.", pt: "gato", level: "superbeginner", options: ["gato", "cachorro", "pássaro", "peixe"] },
+  { word: "big", pos: "adj.", pt: "grande", level: "superbeginner", options: ["pequeno", "grande", "rápido", "lento"] },
+  { word: "run", pos: "v.", pt: "correr", level: "superbeginner", options: ["andar", "correr", "pular", "nadar"] },
+  { word: "red", pos: "adj.", pt: "vermelho", level: "superbeginner", options: ["azul", "verde", "vermelho", "amarelo"] },
+  { word: "eat", pos: "v.", pt: "comer", level: "superbeginner", options: ["beber", "comer", "dormir", "correr"] },
+  { word: "hot", pos: "adj.", pt: "quente", level: "superbeginner", options: ["frio", "quente", "seco", "molhado"] },
+  { word: "book", pos: "n.", pt: "livro", level: "superbeginner", options: ["caneta", "livro", "mesa", "porta"] },
+  { word: "slow", pos: "adj.", pt: "lento", level: "superbeginner", options: ["rápido", "lento", "alto", "baixo"] },
   { word: "stubborn", pos: "adj.", pt: "teimoso", level: "beginner", options: ["teimoso", "tímido", "cansado", "curioso"] },
   { word: "wander", pos: "v.", pt: "vagar / perambular", level: "beginner", options: ["correr", "vagar / perambular", "esconder", "gritar"] },
   { word: "grudge", pos: "n.", pt: "rancor", level: "beginner", options: ["orgulho", "dívida", "rancor", "surpresa"] },
@@ -33,12 +44,22 @@ const BANK = [
   { word: "meticulous", pos: "adj.", pt: "meticuloso", level: "advanced", options: ["descuidado", "meticuloso", "apressado", "distraído"] },
   { word: "disparage", pos: "v.", pt: "depreciar / menosprezar", level: "advanced", options: ["elogiar", "depreciar / menosprezar", "ignorar", "corrigir"] },
   { word: "candid", pos: "adj.", pt: "franco / sincero", level: "advanced", options: ["evasivo", "franco / sincero", "confuso", "distante"] },
+  { word: "serendipity", pos: "n.", pt: "descoberta por acaso", level: "expert", options: ["azar", "descoberta por acaso", "certeza", "rotina"] },
+  { word: "ubiquitous", pos: "adj.", pt: "onipresente", level: "expert", options: ["raro", "onipresente", "escondido", "antigo"] },
+  { word: "ephemeral", pos: "adj.", pt: "efêmero / passageiro", level: "expert", options: ["eterno", "efêmero / passageiro", "sólido", "denso"] },
+  { word: "cacophony", pos: "n.", pt: "cacofonia / barulheira", level: "expert", options: ["silêncio", "cacofonia / barulheira", "melodia", "eco"] },
+  { word: "quintessential", pos: "adj.", pt: "por excelência / típico", level: "expert", options: ["atípico", "por excelência / típico", "raro", "confuso"] },
+  { word: "surreptitious", pos: "adj.", pt: "sorrateiro / disfarçado", level: "expert", options: ["óbvio", "sorrateiro / disfarçado", "ruidoso", "público"] },
+  { word: "juxtaposition", pos: "n.", pt: "justaposição", level: "expert", options: ["fusão", "justaposição", "separação total", "isolamento"] },
+  { word: "vindictive", pos: "adj.", pt: "vingativo", level: "expert", options: ["generoso", "vingativo", "indiferente", "gentil"] },
 ];
 
 const LEVELS = [
+  { id: "superbeginner", label: "Muito Iniciante", vol: "0", desc: "Primeiras palavras" },
   { id: "beginner", label: "Iniciante", vol: "I", desc: "Palavras do dia a dia" },
   { id: "intermediate", label: "Intermediário", vol: "II", desc: "Vocabulário mais rico" },
   { id: "advanced", label: "Avançado", vol: "III", desc: "Termos formais e sofisticados" },
+  { id: "expert", label: "Mestre", vol: "IV", desc: "Vocabulário raro e sofisticado", locked: true },
 ];
 
 function shuffle(arr) {
@@ -152,6 +173,11 @@ export default function Verbario({ profile, firebaseUser, onExit }) {
   }, [lives, picked]);
 
   useEffect(() => {
+    if (screen !== "over" || level !== "advanced") return;
+    if (score >= 30) unlockExpert(GAME_ID);
+  }, [screen, level, score]);
+
+  useEffect(() => {
     if (screen !== "over" || savedThisRound.current || !profile || !firebaseUser) return;
     savedThisRound.current = true;
     (async () => {
@@ -213,13 +239,16 @@ export default function Verbario({ profile, firebaseUser, onExit }) {
           <span style={styles.entryNo}>ESCOLHA O VOLUME</span>
           <p style={styles.intro}>Cada nível é um volume do dicionário.</p>
           <div style={styles.levelList}>
-            {LEVELS.map((l) => (
-              <button key={l.id} style={styles.levelBtn} onClick={() => startLevel(l.id)}>
-                <span style={styles.levelVol}>Vol. {l.vol}</span>
-                <span style={styles.levelLabel}>{l.label}</span>
-                <span style={styles.levelDesc}>{l.desc}</span>
-              </button>
-            ))}
+            {LEVELS.map((l) => {
+              const isLocked = l.locked && !isExpertUnlocked(GAME_ID);
+              return (
+                <button key={l.id} disabled={isLocked} style={{ ...styles.levelBtn, opacity: isLocked ? 0.5 : 1, cursor: isLocked ? "default" : "pointer" }} onClick={() => !isLocked && startLevel(l.id)}>
+                  <span style={styles.levelVol}>Vol. {l.vol}</span>
+                  <span style={styles.levelLabel}>{l.label} {isLocked && "🔒"}</span>
+                  <span style={styles.levelDesc}>{isLocked ? "complete o Avançado pra destravar" : l.desc}</span>
+                </button>
+              );
+            })}
           </div>
           <button style={{ ...styles.ghostBtn, marginTop: 16 }} onClick={openBoard}>Ver placar geral</button>
         </div>

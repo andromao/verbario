@@ -1,9 +1,14 @@
 import { useState, useMemo } from "react";
 import LevelMenu from "../components/LevelMenu";
+import { isExpertUnlocked, unlockExpert } from "../utils/progress";
 
+const GAME_ID = "cruzadinha";
 const ACCENT = "#4C9A6A";
 
 const BANKS = {
+  superbeginner: [
+    { en: "CAT", pt: "Gato" }, { en: "DOG", pt: "Cachorro" }, { en: "SUN", pt: "Sol" }, { en: "RED", pt: "Vermelho" }, { en: "TEN", pt: "Dez" },
+  ],
   beginner: [
     { en: "STAR", pt: "Estrela" }, { en: "RAIN", pt: "Chuva" }, { en: "TREE", pt: "Árvore" }, { en: "BOOK", pt: "Livro" },
     { en: "DOOR", pt: "Porta" }, { en: "MOON", pt: "Lua" }, { en: "FISH", pt: "Peixe" }, { en: "BIRD", pt: "Pássaro" },
@@ -15,6 +20,10 @@ const BANKS = {
   advanced: [
     { en: "BUILDING", pt: "Prédio" }, { en: "HOSPITAL", pt: "Hospital" }, { en: "TRIANGLE", pt: "Triângulo" }, { en: "UMBRELLA", pt: "Guarda-chuva" },
     { en: "MOUNTAIN", pt: "Montanha" }, { en: "ELEPHANT", pt: "Elefante" }, { en: "DISTANCE", pt: "Distância" }, { en: "FAVORITE", pt: "Favorito" },
+  ],
+  expert: [
+    { en: "CONSCIOUSNESS", pt: "Consciência" }, { en: "ENTREPRENEUR", pt: "Empreendedor" }, { en: "SURVEILLANCE", pt: "Vigilância" },
+    { en: "PHOTOGRAPHER", pt: "Fotógrafo" }, { en: "REFRIGERATOR", pt: "Geladeira" },
   ],
 };
 
@@ -88,11 +97,12 @@ export default function Cruzadinha({ onExit }) {
   const [answers, setAnswers] = useState({});
   const [checked, setChecked] = useState(false);
 
-  if (!level) return <LevelMenu accent={ACCENT} gameName="Cruzadinha" onExit={onExit} onSelect={(l) => { setLevel(l); setAnswers({}); setChecked(false); }} />;
+  if (!level) return <LevelMenu accent={ACCENT} gameName="Cruzadinha" onExit={onExit} expertUnlocked={isExpertUnlocked(GAME_ID)} onSelect={(l) => { setLevel(l); setAnswers({}); setChecked(false); }} />;
 
   const across = puzzle.placements.filter((p) => p.dir === "H").sort((a, b) => a.number - b.number);
   const down = puzzle.placements.filter((p) => p.dir === "V").sort((a, b) => a.number - b.number);
   const allFilled = Object.keys(puzzle.cellLetters).every((k) => (answers[k] || "").toUpperCase() === puzzle.cellLetters[k]);
+  if (checked && allFilled && level === "advanced") unlockExpert(GAME_ID);
 
   function handleInput(key, value) {
     const letter = value.slice(-1).toUpperCase().replace(/[^A-Z]/g, "");
@@ -134,7 +144,7 @@ export default function Cruzadinha({ onExit }) {
         ) : null}
         {checked && allFilled && (
           <div style={styles.overActions}>
-            <span style={{ ...styles.doneText, color: ACCENT }}>Completou! 🎉</span>
+            <span style={{ ...styles.doneText, color: ACCENT }}>Completou! 🎉{level === "advanced" ? " Nível Mestre destravado!" : ""}</span>
             <button style={{ ...styles.nextBtn, background: ACCENT }} onClick={restart}>Jogar de novo</button>
           </div>
         )}
@@ -161,5 +171,5 @@ const styles = {
   clueItem: { fontSize: 11.5, color: "#5A6270", margin: "4px 0" },
   nextBtn: { color: "#F7F3E9", border: "none", borderRadius: 3, padding: "10px 16px", fontSize: 13, fontFamily: "'IBM Plex Mono', monospace", cursor: "pointer" },
   overActions: { marginTop: 14, display: "flex", flexDirection: "column", alignItems: "center", gap: 10 },
-  doneText: { fontFamily: "'Fraunces', serif", fontSize: 18 },
+  doneText: { fontFamily: "'Fraunces', serif", fontSize: 16, textAlign: "center" },
 };

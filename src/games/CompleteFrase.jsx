@@ -1,31 +1,39 @@
 import { useState } from "react";
 import LevelMenu from "../components/LevelMenu";
+import { isExpertUnlocked, unlockExpert } from "../utils/progress";
 
+const GAME_ID = "complete-frase";
 const ACCENT = "#B8962E";
 
 const BANKS = {
+  superbeginner: [
+    { before: "I", after: "a cat.", answer: "have", options: ["have", "has", "am", "is"], pt: "Eu tenho um gato." },
+    { before: "This", after: "a book.", answer: "is", options: ["am", "is", "are", "be"], pt: "Isto é um livro." },
+    { before: "She", after: "my friend.", answer: "is", options: ["am", "is", "are", "be"], pt: "Ela é minha amiga." },
+    { before: "We", after: "happy.", answer: "are", options: ["is", "am", "are", "be"], pt: "Nós estamos felizes." },
+  ],
   beginner: [
     { before: "I", after: "a student.", answer: "am", options: ["am", "is", "are", "be"], pt: "Eu sou estudante." },
     { before: "She", after: "happy.", answer: "is", options: ["am", "is", "are", "be"], pt: "Ela está feliz." },
     { before: "They", after: "from Brazil.", answer: "are", options: ["is", "am", "are", "be"], pt: "Eles são do Brasil." },
-    { before: "We", after: "friends.", answer: "are", options: ["is", "am", "are", "be"], pt: "Nós somos amigos." },
     { before: "He", after: "a doctor.", answer: "is", options: ["am", "is", "are", "be"], pt: "Ele é médico." },
-    { before: "It", after: "cold today.", answer: "is", options: ["am", "is", "are", "be"], pt: "Está frio hoje." },
   ],
   intermediate: [
     { before: "She", after: "to school every day.", answer: "goes", options: ["go", "goes", "going", "gone"], pt: "Ela vai à escola todos os dias." },
     { before: "They", after: "watching a movie right now.", answer: "are", options: ["is", "are", "was", "be"], pt: "Eles estão assistindo a um filme agora." },
     { before: "He", after: "harder than anyone else on the team.", answer: "works", options: ["work", "works", "working", "worked"], pt: "Ele trabalha mais duro do que qualquer um no time." },
     { before: "The keys", after: "on the table.", answer: "are", options: ["is", "are", "was", "be"], pt: "As chaves estão na mesa." },
-    { before: "We", after: "dinner right now.", answer: "are having", options: ["have", "has", "are having", "had"], pt: "Nós estamos jantando agora." },
-    { before: "My sister", after: "in London.", answer: "lives", options: ["live", "lives", "living", "lived"], pt: "Minha irmã mora em Londres." },
   ],
   advanced: [
     { before: "I", after: "never been to Japan.", answer: "have", options: ["has", "have", "had", "having"], pt: "Eu nunca fui ao Japão." },
     { before: "We", after: "dinner when you called.", answer: "were having", options: ["have", "had", "were having", "has"], pt: "Nós estávamos jantando quando você ligou." },
     { before: "My parents", after: "married for twenty years.", answer: "have been", options: ["are", "were", "have been", "had"], pt: "Meus pais estão casados há vinte anos." },
     { before: "If it", after: "tomorrow, we'll stay home.", answer: "rains", options: ["rain", "rains", "rained", "raining"], pt: "Se chover amanhã, ficaremos em casa." },
-    { before: "She", after: "the report before the meeting starts.", answer: "will finish", options: ["finish", "finished", "will finish", "finishing"], pt: "Ela vai terminar o relatório antes da reunião começar." },
+  ],
+  expert: [
+    { before: "If I", after: "known, I would have told you.", answer: "had", options: ["have", "had", "has", "having"], pt: "Se eu tivesse sabido, eu teria te contado." },
+    { before: "By the time we arrive, the show", after: "already started.", answer: "will have", options: ["will", "will have", "would have", "has"], pt: "Quando chegarmos, o show já terá começado." },
+    { before: "Not only was she late, but she", after: "forgotten her keys.", answer: "had also", options: ["also had", "had also", "also has", "has also"], pt: "Ela não só se atrasou como também esqueceu as chaves." },
   ],
 };
 
@@ -44,7 +52,7 @@ export default function CompleteFrase({ onExit }) {
 
   if (!level) {
     return (
-      <LevelMenu accent={ACCENT} gameName="Complete a Frase" onExit={onExit}
+      <LevelMenu accent={ACCENT} gameName="Complete a Frase" onExit={onExit} expertUnlocked={isExpertUnlocked(GAME_ID)}
         onSelect={(l) => { setLevel(l); setOrder(shuffle(BANKS[l].map((_, i) => i))); setIdx(0); setPicked(null); setScore(0); }} />
     );
   }
@@ -52,6 +60,7 @@ export default function CompleteFrase({ onExit }) {
   const items = BANKS[level];
   const item = items[order[idx]];
   const finished = idx >= order.length;
+  if (finished && score === items.length && level === "advanced") unlockExpert(GAME_ID);
 
   function choose(opt) { if (picked) return; setPicked(opt); if (opt === item.answer) setScore((s) => s + 1); }
   function next() { setPicked(null); setIdx((i) => i + 1); }
@@ -86,7 +95,7 @@ export default function CompleteFrase({ onExit }) {
           </>
         ) : (
           <div style={styles.overActions}>
-            <span style={{ ...styles.doneText, color: ACCENT }}>{score}/{items.length} certas</span>
+            <span style={{ ...styles.doneText, color: ACCENT }}>{score}/{items.length} certas{score === items.length && level === "advanced" ? " · Nível Mestre destravado!" : ""}</span>
             <button style={{ ...styles.nextBtn, background: ACCENT }} onClick={restart}>Jogar de novo</button>
           </div>
         )}
@@ -102,12 +111,12 @@ const styles = {
   hudItem: { fontSize: 11, fontWeight: 700 },
   card: { background: "#F7F3E9", borderRadius: 4, padding: "20px 20px 18px", boxShadow: "0 12px 30px rgba(0,0,0,0.35)", border: "1px solid #D8D0BC", display: "flex", flexDirection: "column" },
   entryNo: { fontSize: 11, letterSpacing: 1, fontWeight: 700 },
-  sentence: { fontFamily: "'Fraunces', serif", fontSize: 19, color: "#1B2735", marginTop: 16, lineHeight: 1.5 },
+  sentence: { fontFamily: "'Fraunces', serif", fontSize: 18, color: "#1B2735", marginTop: 16, lineHeight: 1.5 },
   blank: { color: "#B08A3E", fontWeight: 700, borderBottom: "2px solid #B08A3E" },
   hint: { fontSize: 12.5, color: "#8B7F5F", fontStyle: "italic", marginTop: 4 },
   options: { display: "flex", flexDirection: "column", gap: 9, marginTop: 16 },
   optBtn: { textAlign: "left", padding: "12px 14px", borderRadius: 3, border: "1.5px solid", fontSize: 14.5, fontFamily: "'IBM Plex Mono', monospace", cursor: "pointer" },
   nextBtn: { color: "#FFFFFF", border: "none", borderRadius: 3, padding: "10px 16px", fontSize: 13, fontFamily: "'IBM Plex Mono', monospace", cursor: "pointer" },
   overActions: { margin: "auto", display: "flex", flexDirection: "column", alignItems: "center", gap: 10 },
-  doneText: { fontFamily: "'Fraunces', serif", fontSize: 32 },
+  doneText: { fontFamily: "'Fraunces', serif", fontSize: 24, textAlign: "center" },
 };

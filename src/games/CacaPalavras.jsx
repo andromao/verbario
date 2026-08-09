@@ -1,10 +1,16 @@
-import { useState, useMemo, useRef, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import LevelMenu from "../components/LevelMenu";
+import { isExpertUnlocked, unlockExpert } from "../utils/progress";
 
+const GAME_ID = "caca-palavras";
 const ACCENT = "#3F9C93";
 const ACCENT_BG = "#E4F2F0";
 
 const BANKS = {
+  superbeginner: { size: 8, words: [
+    { en: "CAT", pt: "gato" }, { en: "DOG", pt: "cachorro" }, { en: "SUN", pt: "sol" }, { en: "RED", pt: "vermelho" },
+    { en: "BIG", pt: "grande" }, { en: "HAT", pt: "chapéu" },
+  ]},
   beginner: { size: 10, words: [
     { en: "APPLE", pt: "maçã" }, { en: "HOUSE", pt: "casa" }, { en: "WATER", pt: "água" }, { en: "MUSIC", pt: "música" },
     { en: "LIGHT", pt: "luz" }, { en: "HAPPY", pt: "feliz" }, { en: "DREAM", pt: "sonho" }, { en: "SMILE", pt: "sorriso" },
@@ -16,6 +22,10 @@ const BANKS = {
   advanced: { size: 13, words: [
     { en: "MOUNTAIN", pt: "montanha" }, { en: "ELEPHANT", pt: "elefante" }, { en: "BUILDING", pt: "prédio" }, { en: "HOSPITAL", pt: "hospital" },
     { en: "UMBRELLA", pt: "guarda-chuva" }, { en: "KNOWLEDGE", pt: "conhecimento" }, { en: "CHALLENGE", pt: "desafio" }, { en: "ADVENTURE", pt: "aventura" },
+  ]},
+  expert: { size: 15, words: [
+    { en: "CONSCIOUSNESS", pt: "consciência" }, { en: "ACCOMPLISHMENT", pt: "realização" }, { en: "SURVEILLANCE", pt: "vigilância" },
+    { en: "REFRIGERATOR", pt: "geladeira" }, { en: "PHOTOGRAPH", pt: "fotografia" }, { en: "ENTREPRENEUR", pt: "empreendedor" },
   ]},
 };
 
@@ -72,9 +82,10 @@ export default function CacaPalavras({ onExit }) {
   const [foundCells, setFoundCells] = useState(new Set());
   const [foundWords, setFoundWords] = useState(new Set());
 
-  if (!level) return <LevelMenu accent={ACCENT} gameName="Caça-palavras" onSelect={(l) => setLevel(l)} onExit={onExit} />;
+  if (!level) return <LevelMenu accent={ACCENT} gameName="Caça-palavras" onExit={onExit} expertUnlocked={isExpertUnlocked(GAME_ID)} onSelect={(l) => setLevel(l)} />;
 
   const allFound = foundWords.size === bank.words.length;
+  if (allFound && level === "advanced") unlockExpert(GAME_ID);
 
   const cellFromPoint = useCallback((x, y) => {
     const el = document.elementFromPoint(x, y);
@@ -146,7 +157,7 @@ export default function CacaPalavras({ onExit }) {
         </div>
         {allFound && (
           <div style={styles.overActions}>
-            <span style={{ ...styles.doneText, color: ACCENT }}>Encontrou todas! 🎉</span>
+            <span style={{ ...styles.doneText, color: ACCENT }}>Encontrou todas! 🎉{level === "advanced" ? " Nível Mestre destravado!" : ""}</span>
             <button style={{ ...styles.nextBtn, background: ACCENT }} onClick={restart}>Jogar de novo</button>
           </div>
         )}
@@ -164,10 +175,10 @@ const styles = {
   entryNo: { fontSize: 11, letterSpacing: 1, fontWeight: 700 },
   intro: { fontSize: 12.5, color: "#5A6270", marginTop: 6, marginBottom: 14, lineHeight: 1.5 },
   grid: { display: "grid", gap: 2, background: "#D8D0BC", padding: 2, borderRadius: 3, userSelect: "none" },
-  cell: { aspectRatio: "1", border: "1.5px solid", fontSize: 10, fontFamily: "'IBM Plex Mono', monospace", fontWeight: 500, cursor: "pointer", padding: 0 },
+  cell: { aspectRatio: "1", border: "1.5px solid", fontSize: 9.5, fontFamily: "'IBM Plex Mono', monospace", fontWeight: 500, cursor: "pointer", padding: 0 },
   wordList: { display: "flex", flexWrap: "wrap", gap: 8, marginTop: 16 },
   wordChip: { fontSize: 11.5, background: "#FFFFFF", border: "1px solid", borderRadius: 20, padding: "4px 10px", color: "#1B2735" },
   overActions: { marginTop: 16, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 },
-  doneText: { fontFamily: "'Fraunces', serif", fontSize: 18 },
+  doneText: { fontFamily: "'Fraunces', serif", fontSize: 16, textAlign: "center" },
   nextBtn: { color: "#F7F3E9", border: "none", borderRadius: 3, padding: "10px 16px", fontSize: 13, fontFamily: "'IBM Plex Mono', monospace", cursor: "pointer" },
 };

@@ -1,10 +1,15 @@
 import { useState } from "react";
 import LevelMenu from "../components/LevelMenu";
+import { isExpertUnlocked, unlockExpert } from "../utils/progress";
 
+const GAME_ID = "forca";
 const ACCENT = "#D96C4F";
 const MAX_WRONG = 6;
 
 const BANKS = {
+  superbeginner: [
+    { en: "cat", pt: "gato" }, { en: "dog", pt: "cachorro" }, { en: "red", pt: "vermelho" }, { en: "sun", pt: "sol" }, { en: "hat", pt: "chapéu" },
+  ],
   beginner: [
     { en: "happy", pt: "feliz" }, { en: "angry", pt: "bravo" }, { en: "quiet", pt: "quieto" }, { en: "brave", pt: "corajoso" },
     { en: "quick", pt: "rápido" }, { en: "sweet", pt: "doce" }, { en: "funny", pt: "engraçado" }, { en: "lucky", pt: "sortudo" },
@@ -16,6 +21,10 @@ const BANKS = {
   advanced: [
     { en: "wonderful", pt: "maravilhoso" }, { en: "dangerous", pt: "perigoso" }, { en: "beautiful", pt: "bonito" }, { en: "difficult", pt: "difícil" },
     { en: "important", pt: "importante" }, { en: "necessary", pt: "necessário" }, { en: "generous", pt: "generoso" }, { en: "ambitious", pt: "ambicioso" },
+  ],
+  expert: [
+    { en: "unbelievable", pt: "inacreditável" }, { en: "extraordinary", pt: "extraordinário" }, { en: "sophisticated", pt: "sofisticado" },
+    { en: "misunderstanding", pt: "mal-entendido" }, { en: "responsibility", pt: "responsabilidade" }, { en: "characteristic", pt: "característica" },
   ],
 };
 
@@ -34,12 +43,8 @@ export default function Forca({ onExit }) {
 
   if (!level) {
     return (
-      <LevelMenu
-        accent={ACCENT}
-        gameName="Forca"
-        onExit={onExit}
-        onSelect={(l) => { setLevel(l); setCurrent(pickWord(BANKS[l], null)); setGuessed(new Set()); setWrong(0); }}
-      />
+      <LevelMenu accent={ACCENT} gameName="Forca" onExit={onExit} expertUnlocked={isExpertUnlocked(GAME_ID)}
+        onSelect={(l) => { setLevel(l); setCurrent(pickWord(BANKS[l], null)); setGuessed(new Set()); setWrong(0); }} />
     );
   }
 
@@ -47,6 +52,7 @@ export default function Forca({ onExit }) {
   const won = letters.every((l) => guessed.has(l));
   const lost = wrong >= MAX_WRONG;
   const over = won || lost;
+  if (won && level === "advanced") unlockExpert(GAME_ID);
 
   function guess(letter) {
     if (over || guessed.has(letter)) return;
@@ -93,7 +99,7 @@ export default function Forca({ onExit }) {
         )}
         {over && (
           <div style={styles.overActions}>
-            <span style={{ ...styles.doneText, color: won ? "#3E5C4C" : "#8B3E38" }}>{won ? "Acertou! 🎉" : `A palavra era "${current.en}"`}</span>
+            <span style={{ ...styles.doneText, color: won ? "#3E5C4C" : "#8B3E38" }}>{won ? `Acertou! 🎉${level === "advanced" ? " Nível Mestre destravado!" : ""}` : `A palavra era "${current.en}"`}</span>
             <button style={{ ...styles.nextBtn, background: ACCENT }} onClick={nextWord}>Próxima palavra</button>
           </div>
         )}
@@ -116,6 +122,6 @@ const styles = {
   keyboard: { display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "center" },
   key: { width: 28, height: 32, border: "1.5px solid", borderRadius: 3, fontSize: 13, fontFamily: "'IBM Plex Mono', monospace", cursor: "pointer", textTransform: "uppercase" },
   overActions: { marginTop: 14, display: "flex", flexDirection: "column", alignItems: "center", gap: 10 },
-  doneText: { fontFamily: "'Fraunces', serif", fontSize: 17 },
+  doneText: { fontFamily: "'Fraunces', serif", fontSize: 16, textAlign: "center" },
   nextBtn: { color: "#F7F3E9", border: "none", borderRadius: 3, padding: "10px 16px", fontSize: 13, fontFamily: "'IBM Plex Mono', monospace", cursor: "pointer" },
 };

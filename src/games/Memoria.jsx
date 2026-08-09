@@ -1,12 +1,17 @@
 import { useState, useMemo } from "react";
 import LevelMenu from "../components/LevelMenu";
+import { isExpertUnlocked, unlockExpert } from "../utils/progress";
 
+const GAME_ID = "memoria";
 const ACCENT = "#D9578F";
 
 const BANKS = {
+  superbeginner: [
+    { en: "cat", pt: "gato" }, { en: "dog", pt: "cachorro" }, { en: "sun", pt: "sol" }, { en: "red", pt: "vermelho" }, { en: "hat", pt: "chapéu" }, { en: "ten", pt: "dez" },
+  ],
   beginner: [
-    { en: "cat", pt: "gato" }, { en: "dog", pt: "cachorro" }, { en: "sun", pt: "sol" }, { en: "moon", pt: "lua" },
-    { en: "book", pt: "livro" }, { en: "pen", pt: "caneta" }, { en: "cup", pt: "xícara" }, { en: "hat", pt: "chapéu" },
+    { en: "book", pt: "livro" }, { en: "pen", pt: "caneta" }, { en: "cup", pt: "xícara" }, { en: "moon", pt: "lua" },
+    { en: "star", pt: "estrela" }, { en: "fish", pt: "peixe" }, { en: "bird", pt: "pássaro" }, { en: "tree", pt: "árvore" },
   ],
   intermediate: [
     { en: "chair", pt: "cadeira" }, { en: "window", pt: "janela" }, { en: "friend", pt: "amigo" }, { en: "school", pt: "escola" },
@@ -15,6 +20,10 @@ const BANKS = {
   advanced: [
     { en: "knowledge", pt: "conhecimento" }, { en: "opportunity", pt: "oportunidade" }, { en: "environment", pt: "meio ambiente" }, { en: "experience", pt: "experiência" },
     { en: "imagination", pt: "imaginação" }, { en: "responsibility", pt: "responsabilidade" }, { en: "communication", pt: "comunicação" }, { en: "government", pt: "governo" },
+  ],
+  expert: [
+    { en: "consciousness", pt: "consciência" }, { en: "entrepreneur", pt: "empreendedor" }, { en: "surveillance", pt: "vigilância" }, { en: "accomplishment", pt: "realização" },
+    { en: "sophisticated", pt: "sofisticado" }, { en: "misunderstanding", pt: "mal-entendido" },
   ],
 };
 
@@ -39,9 +48,10 @@ export default function Memoria({ onExit }) {
   const [busy, setBusy] = useState(false);
   const [moves, setMoves] = useState(0);
 
-  if (!level) return <LevelMenu accent={ACCENT} gameName="Memória" onExit={onExit} onSelect={(l) => { setLevel(l); setFlipped([]); setMatched(new Set()); setMoves(0); }} />;
+  if (!level) return <LevelMenu accent={ACCENT} gameName="Memória" onExit={onExit} expertUnlocked={isExpertUnlocked(GAME_ID)} onSelect={(l) => { setLevel(l); setFlipped([]); setMatched(new Set()); setMoves(0); }} />;
 
   const won = matched.size === pairs.length;
+  if (won && level === "advanced") unlockExpert(GAME_ID);
 
   function handleClick(idx) {
     if (busy || flipped.includes(idx) || matched.has(deck[idx].pairId)) return;
@@ -81,7 +91,7 @@ export default function Memoria({ onExit }) {
         </div>
         {won && (
           <div style={styles.overActions}>
-            <span style={{ ...styles.doneText, color: ACCENT }}>Todos os pares! 🎉 ({moves} jogadas)</span>
+            <span style={{ ...styles.doneText, color: ACCENT }}>Todos os pares! 🎉 ({moves} jogadas){level === "advanced" ? " Nível Mestre destravado!" : ""}</span>
             <button style={{ ...styles.nextBtn, background: ACCENT }} onClick={restart}>Jogar de novo</button>
           </div>
         )}
@@ -99,8 +109,8 @@ const styles = {
   entryNo: { fontSize: 11, letterSpacing: 1, fontWeight: 700 },
   intro: { fontSize: 12.5, color: "#5A6270", marginTop: 6, marginBottom: 14, lineHeight: 1.5 },
   grid: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 },
-  card2: { aspectRatio: "1", border: "1.5px solid", borderRadius: 4, fontSize: 10, fontFamily: "'IBM Plex Mono', monospace", fontWeight: 600, cursor: "pointer", padding: 4, textTransform: "lowercase" },
+  card2: { aspectRatio: "1", border: "1.5px solid", borderRadius: 4, fontSize: 9.5, fontFamily: "'IBM Plex Mono', monospace", fontWeight: 600, cursor: "pointer", padding: 4, textTransform: "lowercase" },
   overActions: { marginTop: 18, display: "flex", flexDirection: "column", alignItems: "center", gap: 10 },
-  doneText: { fontFamily: "'Fraunces', serif", fontSize: 15, textAlign: "center" },
+  doneText: { fontFamily: "'Fraunces', serif", fontSize: 14, textAlign: "center" },
   nextBtn: { color: "#F7F3E9", border: "none", borderRadius: 3, padding: "10px 16px", fontSize: 13, fontFamily: "'IBM Plex Mono', monospace", cursor: "pointer" },
 };

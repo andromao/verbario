@@ -1,12 +1,17 @@
 import { useState } from "react";
 import LevelMenu from "../components/LevelMenu";
+import { isExpertUnlocked, unlockExpert } from "../utils/progress";
 
+const GAME_ID = "ouca-escreva";
 const ACCENT = "#B23A48";
 
 const BANKS = {
+  superbeginner: [
+    { en: "cat", pt: "gato" }, { en: "dog", pt: "cachorro" }, { en: "sun", pt: "sol" }, { en: "red", pt: "vermelho" }, { en: "yes", pt: "sim" },
+  ],
   beginner: [
-    { en: "cat", pt: "gato" }, { en: "dog", pt: "cachorro" }, { en: "sun", pt: "sol" }, { en: "book", pt: "livro" },
-    { en: "pen", pt: "caneta" }, { en: "red", pt: "vermelho" }, { en: "run", pt: "correr" }, { en: "big", pt: "grande" },
+    { en: "book", pt: "livro" }, { en: "pen", pt: "caneta" }, { en: "run", pt: "correr" }, { en: "big", pt: "grande" },
+    { en: "happy", pt: "feliz" }, { en: "green", pt: "verde" }, { en: "small", pt: "pequeno" }, { en: "chair", pt: "cadeira" },
   ],
   intermediate: [
     { en: "pumpkin", pt: "abóbora" }, { en: "volcano", pt: "vulcão" }, { en: "dolphin", pt: "golfinho" }, { en: "sandwich", pt: "sanduíche" },
@@ -15,6 +20,10 @@ const BANKS = {
   advanced: [
     { en: "chocolate", pt: "chocolate" }, { en: "vocabulary", pt: "vocabulário" }, { en: "restaurant", pt: "restaurante" }, { en: "celebration", pt: "celebração" },
     { en: "imagination", pt: "imaginação" }, { en: "temperature", pt: "temperatura" }, { en: "unfortunately", pt: "infelizmente" }, { en: "extraordinary", pt: "extraordinário" },
+  ],
+  expert: [
+    { en: "entrepreneur", pt: "empreendedor" }, { en: "consciousness", pt: "consciência" }, { en: "surveillance", pt: "vigilância" },
+    { en: "misunderstanding", pt: "mal-entendido" }, { en: "sophisticated", pt: "sofisticado" },
   ],
 };
 
@@ -40,7 +49,7 @@ export default function OucaEscreva({ onExit }) {
 
   if (!level) {
     return (
-      <LevelMenu accent={ACCENT} gameName="Ouça e Escreva" onExit={onExit}
+      <LevelMenu accent={ACCENT} gameName="Ouça e Escreva" onExit={onExit} expertUnlocked={isExpertUnlocked(GAME_ID)}
         onSelect={(l) => { setLevel(l); setCurrent(pickWord(BANKS[l], null)); setTyped(""); setChecked(null); setShowHint(false); }} />
     );
   }
@@ -56,6 +65,8 @@ export default function OucaEscreva({ onExit }) {
       </div>
     );
   }
+
+  if (checked === true && level === "advanced") unlockExpert(GAME_ID);
 
   function verify() { setChecked(typed.trim().toLowerCase() === current.en); }
   function next() { setCurrent((c) => pickWord(BANKS[level], c.en)); setTyped(""); setChecked(null); setShowHint(false); }
@@ -81,7 +92,7 @@ export default function OucaEscreva({ onExit }) {
           )}
           {checked === true && (
             <>
-              <span style={{ ...styles.doneText, color: ACCENT }}>Acertou! 🎉</span>
+              <span style={{ ...styles.doneText, color: ACCENT }}>Acertou! 🎉{level === "advanced" ? " Nível Mestre destravado!" : ""}</span>
               <button style={{ ...styles.nextBtn, background: ACCENT }} onClick={next}>Próxima palavra</button>
             </>
           )}
@@ -103,7 +114,7 @@ const styles = {
   wrongText: { fontSize: 12, color: "#C65D57", marginTop: 8 },
   hintText: { fontSize: 12, color: "#8B7F5F", fontStyle: "italic", marginTop: 8 },
   actions: { marginTop: 16, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" },
-  doneText: { fontFamily: "'Fraunces', serif", fontSize: 17 },
+  doneText: { fontFamily: "'Fraunces', serif", fontSize: 16 },
   nextBtn: { color: "#FFFFFF", border: "none", borderRadius: 3, padding: "10px 16px", fontSize: 13, fontFamily: "'IBM Plex Mono', monospace", cursor: "pointer" },
   ghostBtn: { background: "none", color: "#1B2735", border: "1.5px solid #D8D0BC", borderRadius: 3, padding: "10px 16px", fontSize: 13, fontFamily: "'IBM Plex Mono', monospace", cursor: "pointer" },
 };

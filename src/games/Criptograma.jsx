@@ -1,9 +1,14 @@
 import { useState, useMemo, useRef } from "react";
 import LevelMenu from "../components/LevelMenu";
+import { isExpertUnlocked, unlockExpert } from "../utils/progress";
 
+const GAME_ID = "criptograma";
 const ACCENT = "#8B7FD9";
 
 const BANKS = {
+  superbeginner: [
+    { en: "CAT", pt: "gato" }, { en: "DOG", pt: "cachorro" }, { en: "SUN", pt: "sol" }, { en: "RED", pt: "vermelho" },
+  ],
   beginner: [
     { en: "APPLE", pt: "maçã" }, { en: "HOUSE", pt: "casa" }, { en: "WATER", pt: "água" }, { en: "LIGHT", pt: "luz" }, { en: "HAPPY", pt: "feliz" },
   ],
@@ -13,6 +18,9 @@ const BANKS = {
   advanced: [
     { en: "WONDERFUL", pt: "maravilhoso" }, { en: "DISTANCE", pt: "distância" }, { en: "CALENDAR", pt: "calendário" }, { en: "FAVORITE", pt: "favorito" },
     { en: "BUILDING", pt: "prédio / construção" }, { en: "HOSPITAL", pt: "hospital" }, { en: "TRIANGLE", pt: "triângulo" }, { en: "UMBRELLA", pt: "guarda-chuva" },
+  ],
+  expert: [
+    { en: "CONSCIOUSNESS", pt: "consciência" }, { en: "ENTREPRENEUR", pt: "empreendedor" }, { en: "SURVEILLANCE", pt: "vigilância" }, { en: "PHOTOGRAPHER", pt: "fotógrafo" },
   ],
 };
 
@@ -45,7 +53,7 @@ export default function Criptograma({ onExit }) {
 
   if (!level) {
     return (
-      <LevelMenu accent={ACCENT} gameName="Criptograma" onExit={onExit}
+      <LevelMenu accent={ACCENT} gameName="Criptograma" onExit={onExit} expertUnlocked={isExpertUnlocked(GAME_ID)}
         onSelect={(l) => { setLevel(l); setCurrent(pickWord(BANKS[l], null)); setGuesses({}); setRevealed(new Set()); }} />
     );
   }
@@ -53,6 +61,7 @@ export default function Criptograma({ onExit }) {
   const codesInWord = current.en.split("").map((l) => letterToCode[l]);
   const uniqueCodes = [...new Set(codesInWord)];
   const solved = uniqueCodes.every((c) => (guesses[c] || "").toUpperCase() === codeToLetter[c]);
+  if (solved && level === "advanced") unlockExpert(GAME_ID);
 
   function handleGuess(code, value) {
     const letter = value.slice(-1).toUpperCase().replace(/[^A-Z]/g, "");
@@ -97,7 +106,7 @@ export default function Criptograma({ onExit }) {
           <button style={{ ...styles.ghostBtn, marginTop: 18, alignSelf: "flex-start", borderColor: ACCENT, color: ACCENT }} onClick={revealLetter}>Revelar uma letra</button>
         ) : (
           <div style={styles.overActions}>
-            <span style={{ ...styles.doneText, color: ACCENT }}>Decifrou! 🎉</span>
+            <span style={{ ...styles.doneText, color: ACCENT }}>Decifrou! 🎉{level === "advanced" ? " Nível Mestre destravado!" : ""}</span>
             <button style={{ ...styles.nextBtn, background: ACCENT }} onClick={nextWord}>Próxima palavra</button>
           </div>
         )}
@@ -119,6 +128,6 @@ const styles = {
   codeLabel: { fontSize: 10, color: "#8B96A6" },
   ghostBtn: { background: "none", border: "1.5px solid", borderRadius: 3, padding: "10px 16px", fontSize: 13, fontFamily: "'IBM Plex Mono', monospace", cursor: "pointer" },
   overActions: { marginTop: 18, display: "flex", flexDirection: "column", alignItems: "center", gap: 10 },
-  doneText: { fontFamily: "'Fraunces', serif", fontSize: 18 },
+  doneText: { fontFamily: "'Fraunces', serif", fontSize: 16, textAlign: "center" },
   nextBtn: { color: "#F7F3E9", border: "none", borderRadius: 3, padding: "10px 16px", fontSize: 13, fontFamily: "'IBM Plex Mono', monospace", cursor: "pointer" },
 };
