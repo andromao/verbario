@@ -1,81 +1,81 @@
 import { useState } from "react";
+import LevelMenu from "../components/LevelMenu";
 
 const ACCENT = "#B8962E";
 
-const ITEMS = [
-  { before: "She", blank: "___", after: "to school every day.", answer: "goes", options: ["go", "goes", "going", "gone"], pt: "Ela vai à escola todos os dias." },
-  { before: "They", blank: "___", after: "watching a movie right now.", answer: "are", options: ["is", "are", "was", "be"], pt: "Eles estão assistindo a um filme agora." },
-  { before: "I", blank: "___", after: "never been to Japan.", answer: "have", options: ["has", "have", "had", "having"], pt: "Eu nunca fui ao Japão." },
-  { before: "This", blank: "___", after: "the best pizza I've ever had.", answer: "is", options: ["is", "are", "be", "was"], pt: "Esta é a melhor pizza que já comi." },
-  { before: "We", blank: "___", after: "dinner when you called.", answer: "were having", options: ["have", "had", "were having", "has"], pt: "Nós estávamos jantando quando você ligou." },
-  { before: "He", blank: "___", after: "harder than anyone else on the team.", answer: "works", options: ["work", "works", "working", "worked"], pt: "Ele trabalha mais duro do que qualquer um no time." },
-  { before: "My parents", blank: "___", after: "married for twenty years.", answer: "have been", options: ["are", "were", "have been", "had"], pt: "Meus pais estão casados há vinte anos." },
-  { before: "If it", blank: "___", after: "tomorrow, we'll stay home.", answer: "rains", options: ["rain", "rains", "rained", "raining"], pt: "Se chover amanhã, ficaremos em casa." },
-  { before: "She", blank: "___", after: "the report before the meeting starts.", answer: "will finish", options: ["finish", "finished", "will finish", "finishing"], pt: "Ela vai terminar o relatório antes da reunião começar." },
-  { before: "The keys", blank: "___", after: "on the table.", answer: "are", options: ["is", "are", "was", "be"], pt: "As chaves estão na mesa." },
-];
+const BANKS = {
+  beginner: [
+    { before: "I", after: "a student.", answer: "am", options: ["am", "is", "are", "be"], pt: "Eu sou estudante." },
+    { before: "She", after: "happy.", answer: "is", options: ["am", "is", "are", "be"], pt: "Ela está feliz." },
+    { before: "They", after: "from Brazil.", answer: "are", options: ["is", "am", "are", "be"], pt: "Eles são do Brasil." },
+    { before: "We", after: "friends.", answer: "are", options: ["is", "am", "are", "be"], pt: "Nós somos amigos." },
+    { before: "He", after: "a doctor.", answer: "is", options: ["am", "is", "are", "be"], pt: "Ele é médico." },
+    { before: "It", after: "cold today.", answer: "is", options: ["am", "is", "are", "be"], pt: "Está frio hoje." },
+  ],
+  intermediate: [
+    { before: "She", after: "to school every day.", answer: "goes", options: ["go", "goes", "going", "gone"], pt: "Ela vai à escola todos os dias." },
+    { before: "They", after: "watching a movie right now.", answer: "are", options: ["is", "are", "was", "be"], pt: "Eles estão assistindo a um filme agora." },
+    { before: "He", after: "harder than anyone else on the team.", answer: "works", options: ["work", "works", "working", "worked"], pt: "Ele trabalha mais duro do que qualquer um no time." },
+    { before: "The keys", after: "on the table.", answer: "are", options: ["is", "are", "was", "be"], pt: "As chaves estão na mesa." },
+    { before: "We", after: "dinner right now.", answer: "are having", options: ["have", "has", "are having", "had"], pt: "Nós estamos jantando agora." },
+    { before: "My sister", after: "in London.", answer: "lives", options: ["live", "lives", "living", "lived"], pt: "Minha irmã mora em Londres." },
+  ],
+  advanced: [
+    { before: "I", after: "never been to Japan.", answer: "have", options: ["has", "have", "had", "having"], pt: "Eu nunca fui ao Japão." },
+    { before: "We", after: "dinner when you called.", answer: "were having", options: ["have", "had", "were having", "has"], pt: "Nós estávamos jantando quando você ligou." },
+    { before: "My parents", after: "married for twenty years.", answer: "have been", options: ["are", "were", "have been", "had"], pt: "Meus pais estão casados há vinte anos." },
+    { before: "If it", after: "tomorrow, we'll stay home.", answer: "rains", options: ["rain", "rains", "rained", "raining"], pt: "Se chover amanhã, ficaremos em casa." },
+    { before: "She", after: "the report before the meeting starts.", answer: "will finish", options: ["finish", "finished", "will finish", "finishing"], pt: "Ela vai terminar o relatório antes da reunião começar." },
+  ],
+};
 
 function shuffle(arr) {
   const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
   return a;
 }
 
 export default function CompleteFrase({ onExit }) {
-  const [order] = useState(() => shuffle(ITEMS.map((_, i) => i)));
+  const [level, setLevel] = useState(null);
+  const [order, setOrder] = useState([]);
   const [idx, setIdx] = useState(0);
   const [picked, setPicked] = useState(null);
   const [score, setScore] = useState(0);
 
-  const item = ITEMS[order[idx]];
+  if (!level) {
+    return (
+      <LevelMenu accent={ACCENT} gameName="Complete a Frase" onExit={onExit}
+        onSelect={(l) => { setLevel(l); setOrder(shuffle(BANKS[l].map((_, i) => i))); setIdx(0); setPicked(null); setScore(0); }} />
+    );
+  }
+
+  const items = BANKS[level];
+  const item = items[order[idx]];
   const finished = idx >= order.length;
 
-  function choose(opt) {
-    if (picked) return;
-    setPicked(opt);
-    if (opt === item.answer) setScore((s) => s + 1);
-  }
-
-  function next() {
-    setPicked(null);
-    setIdx((i) => i + 1);
-  }
-
-  function restart() {
-    setIdx(0); setPicked(null); setScore(0);
-  }
+  function choose(opt) { if (picked) return; setPicked(opt); if (opt === item.answer) setScore((s) => s + 1); }
+  function next() { setPicked(null); setIdx((i) => i + 1); }
+  function restart() { setIdx(0); setPicked(null); setScore(0); setOrder(shuffle(items.map((_, i) => i))); }
+  function changeLevel() { setLevel(null); }
 
   return (
     <div style={styles.wrap}>
       <div style={styles.topBar}>
-        <button style={styles.backBtn} onClick={onExit}>← jogos</button>
-        <span style={{ ...styles.hudItem, color: ACCENT }}>{score}/{ITEMS.length}</span>
+        <button style={styles.backBtn} onClick={changeLevel}>← nível</button>
+        <span style={{ ...styles.hudItem, color: ACCENT }}>{score}/{items.length}</span>
       </div>
-
       <div style={styles.card}>
         <span style={{ ...styles.entryNo, color: ACCENT }}>COMPLETE A FRASE</span>
-
         {!finished ? (
           <>
             <p style={styles.sentence}>{item.before} <span style={styles.blank}>{picked || "___"}</span> {item.after}</p>
             <p style={styles.hint}>Dica: {item.pt}</p>
             <div style={styles.options}>
               {item.options.map((opt) => {
-                const isCorrect = opt === item.answer;
-                const isPicked = picked === opt;
+                const isCorrect = opt === item.answer, isPicked = picked === opt;
                 let bg = "#FFFFFF", border = "#D8D0BC", color = "#1B2735";
-                if (picked) {
-                  if (isCorrect) { bg = "#F5EFD9"; border = ACCENT; color = "#6B5A17"; }
-                  else if (isPicked) { bg = "#F4E4E2"; border = "#C65D57"; color = "#8B3E38"; }
-                }
-                return (
-                  <button key={opt} disabled={!!picked} onClick={() => choose(opt)} style={{ ...styles.optBtn, background: bg, borderColor: border, color }}>
-                    {opt}
-                  </button>
-                );
+                if (picked) { if (isCorrect) { bg = "#F5EFD9"; border = ACCENT; color = "#6B5A17"; } else if (isPicked) { bg = "#F4E4E2"; border = "#C65D57"; color = "#8B3E38"; } }
+                return <button key={opt} disabled={!!picked} onClick={() => choose(opt)} style={{ ...styles.optBtn, background: bg, borderColor: border, color }}>{opt}</button>;
               })}
             </div>
             {picked && (
@@ -86,7 +86,7 @@ export default function CompleteFrase({ onExit }) {
           </>
         ) : (
           <div style={styles.overActions}>
-            <span style={{ ...styles.doneText, color: ACCENT }}>{score}/{ITEMS.length} certas</span>
+            <span style={{ ...styles.doneText, color: ACCENT }}>{score}/{items.length} certas</span>
             <button style={{ ...styles.nextBtn, background: ACCENT }} onClick={restart}>Jogar de novo</button>
           </div>
         )}

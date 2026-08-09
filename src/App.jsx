@@ -75,6 +75,7 @@ export default function App() {
     setRegError("");
     setScreen("register");
   }
+  function openGame(id) {
     setActiveGame(id);
     setScreen("game");
   }

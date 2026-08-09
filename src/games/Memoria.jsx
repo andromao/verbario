@@ -1,103 +1,84 @@
 import { useState, useMemo } from "react";
+import LevelMenu from "../components/LevelMenu";
 
 const ACCENT = "#D9578F";
 
-const PAIRS = [
-  { en: "book", pt: "livro" },
-  { en: "chair", pt: "cadeira" },
-  { en: "window", pt: "janela" },
-  { en: "friend", pt: "amigo" },
-  { en: "school", pt: "escola" },
-  { en: "garden", pt: "jardim" },
-  { en: "kitchen", pt: "cozinha" },
-  { en: "street", pt: "rua" },
-];
+const BANKS = {
+  beginner: [
+    { en: "cat", pt: "gato" }, { en: "dog", pt: "cachorro" }, { en: "sun", pt: "sol" }, { en: "moon", pt: "lua" },
+    { en: "book", pt: "livro" }, { en: "pen", pt: "caneta" }, { en: "cup", pt: "xícara" }, { en: "hat", pt: "chapéu" },
+  ],
+  intermediate: [
+    { en: "chair", pt: "cadeira" }, { en: "window", pt: "janela" }, { en: "friend", pt: "amigo" }, { en: "school", pt: "escola" },
+    { en: "garden", pt: "jardim" }, { en: "kitchen", pt: "cozinha" }, { en: "street", pt: "rua" }, { en: "family", pt: "família" },
+  ],
+  advanced: [
+    { en: "knowledge", pt: "conhecimento" }, { en: "opportunity", pt: "oportunidade" }, { en: "environment", pt: "meio ambiente" }, { en: "experience", pt: "experiência" },
+    { en: "imagination", pt: "imaginação" }, { en: "responsibility", pt: "responsabilidade" }, { en: "communication", pt: "comunicação" }, { en: "government", pt: "governo" },
+  ],
+};
 
 function shuffle(arr) {
   const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
   return a;
 }
-
-function buildDeck() {
+function buildDeck(pairs) {
   const cards = [];
-  PAIRS.forEach((p, i) => {
-    cards.push({ key: `${i}-en`, pairId: i, text: p.en });
-    cards.push({ key: `${i}-pt`, pairId: i, text: p.pt });
-  });
+  pairs.forEach((p, i) => { cards.push({ key: `${i}-en`, pairId: i, text: p.en }); cards.push({ key: `${i}-pt`, pairId: i, text: p.pt }); });
   return shuffle(cards);
 }
 
 export default function Memoria({ onExit }) {
+  const [level, setLevel] = useState(null);
   const [round, setRound] = useState(0);
-  const deck = useMemo(() => buildDeck(), [round]);
+  const pairs = level ? BANKS[level] : [];
+  const deck = useMemo(() => (level ? buildDeck(pairs) : []), [round, level]);
   const [flipped, setFlipped] = useState([]);
   const [matched, setMatched] = useState(new Set());
   const [busy, setBusy] = useState(false);
   const [moves, setMoves] = useState(0);
 
-  const won = matched.size === PAIRS.length;
+  if (!level) return <LevelMenu accent={ACCENT} gameName="Memória" onExit={onExit} onSelect={(l) => { setLevel(l); setFlipped([]); setMatched(new Set()); setMoves(0); }} />;
+
+  const won = matched.size === pairs.length;
 
   function handleClick(idx) {
     if (busy || flipped.includes(idx) || matched.has(deck[idx].pairId)) return;
     const next = [...flipped, idx];
     setFlipped(next);
     if (next.length === 2) {
-      setMoves((m) => m + 1);
-      setBusy(true);
+      setMoves((m) => m + 1); setBusy(true);
       const [a, b] = next;
       if (deck[a].pairId === deck[b].pairId) {
-        setTimeout(() => {
-          setMatched((prev) => new Set(prev).add(deck[a].pairId));
-          setFlipped([]);
-          setBusy(false);
-        }, 500);
+        setTimeout(() => { setMatched((prev) => new Set(prev).add(deck[a].pairId)); setFlipped([]); setBusy(false); }, 500);
       } else {
         setTimeout(() => { setFlipped([]); setBusy(false); }, 800);
       }
     }
   }
-
-  function restart() {
-    setFlipped([]); setMatched(new Set()); setBusy(false); setMoves(0);
-    setRound((r) => r + 1);
-  }
+  function restart() { setFlipped([]); setMatched(new Set()); setBusy(false); setMoves(0); setRound((r) => r + 1); }
+  function changeLevel() { setLevel(null); }
 
   return (
     <div style={styles.wrap}>
       <div style={styles.topBar}>
-        <button style={styles.backBtn} onClick={onExit}>← jogos</button>
+        <button style={styles.backBtn} onClick={changeLevel}>← nível</button>
         <span style={{ ...styles.hudItem, color: ACCENT }}>{moves} jogadas</span>
       </div>
-
       <div style={styles.card}>
         <span style={{ ...styles.entryNo, color: ACCENT }}>MEMÓRIA</span>
         <p style={styles.intro}>Encontre os pares: palavra em inglês + significado em português.</p>
-
         <div style={styles.grid}>
           {deck.map((c, i) => {
-            const isMatched = matched.has(c.pairId);
-            const isFlipped = flipped.includes(i) || isMatched;
+            const isMatched = matched.has(c.pairId), isFlipped = flipped.includes(i) || isMatched;
             return (
-              <button
-                key={c.key}
-                onClick={() => handleClick(i)}
-                style={{
-                  ...styles.card2,
-                  background: isMatched ? "#FBE9F0" : isFlipped ? "#FFFFFF" : ACCENT,
-                  borderColor: isMatched ? ACCENT : "#D8D0BC",
-                  color: isFlipped ? "#1B2735" : "#FFFFFF",
-                }}
-              >
+              <button key={c.key} onClick={() => handleClick(i)} style={{ ...styles.card2, background: isMatched ? "#FBE9F0" : isFlipped ? "#FFFFFF" : ACCENT, borderColor: isMatched ? ACCENT : "#D8D0BC", color: isFlipped ? "#1B2735" : "#FFFFFF" }}>
                 {isFlipped ? c.text : "?"}
               </button>
             );
           })}
         </div>
-
         {won && (
           <div style={styles.overActions}>
             <span style={{ ...styles.doneText, color: ACCENT }}>Todos os pares! 🎉 ({moves} jogadas)</span>
@@ -118,7 +99,7 @@ const styles = {
   entryNo: { fontSize: 11, letterSpacing: 1, fontWeight: 700 },
   intro: { fontSize: 12.5, color: "#5A6270", marginTop: 6, marginBottom: 14, lineHeight: 1.5 },
   grid: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 },
-  card2: { aspectRatio: "1", border: "1.5px solid", borderRadius: 4, fontSize: 10.5, fontFamily: "'IBM Plex Mono', monospace", fontWeight: 600, cursor: "pointer", padding: 4, textTransform: "lowercase" },
+  card2: { aspectRatio: "1", border: "1.5px solid", borderRadius: 4, fontSize: 10, fontFamily: "'IBM Plex Mono', monospace", fontWeight: 600, cursor: "pointer", padding: 4, textTransform: "lowercase" },
   overActions: { marginTop: 18, display: "flex", flexDirection: "column", alignItems: "center", gap: 10 },
   doneText: { fontFamily: "'Fraunces', serif", fontSize: 15, textAlign: "center" },
   nextBtn: { color: "#F7F3E9", border: "none", borderRadius: 3, padding: "10px 16px", fontSize: 13, fontFamily: "'IBM Plex Mono', monospace", cursor: "pointer" },

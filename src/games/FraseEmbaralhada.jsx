@@ -1,103 +1,89 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
+import LevelMenu from "../components/LevelMenu";
 
 const ACCENT = "#3E86C9";
 
-const SENTENCES = [
-  { en: "I like to read books", pt: "Eu gosto de ler livros" },
-  { en: "She works at a hospital", pt: "Ela trabalha em um hospital" },
-  { en: "We are going to the beach", pt: "Nós vamos para a praia" },
-  { en: "He never eats breakfast", pt: "Ele nunca toma café da manhã" },
-  { en: "They live in a small house", pt: "Eles moram em uma casa pequena" },
-  { en: "My brother plays the guitar", pt: "Meu irmão toca violão" },
-  { en: "This coffee is too hot", pt: "Esse café está muito quente" },
-  { en: "The children are playing outside", pt: "As crianças estão brincando lá fora" },
-];
+const BANKS = {
+  beginner: [
+    { en: "I like cats", pt: "Eu gosto de gatos" }, { en: "She is happy", pt: "Ela está feliz" }, { en: "We eat lunch", pt: "Nós almoçamos" },
+    { en: "He can swim", pt: "Ele sabe nadar" }, { en: "They are here", pt: "Eles estão aqui" }, { en: "This is nice", pt: "Isso é legal" },
+  ],
+  intermediate: [
+    { en: "I like to read books", pt: "Eu gosto de ler livros" }, { en: "She works at a hospital", pt: "Ela trabalha em um hospital" },
+    { en: "We are going to the beach", pt: "Nós vamos para a praia" }, { en: "He never eats breakfast", pt: "Ele nunca toma café da manhã" },
+    { en: "My brother plays the guitar", pt: "Meu irmão toca violão" }, { en: "The children are playing outside", pt: "As crianças estão brincando lá fora" },
+  ],
+  advanced: [
+    { en: "Although it was raining we went outside", pt: "Embora estivesse chovendo, nós saímos" },
+    { en: "She said that she would call me later", pt: "Ela disse que me ligaria mais tarde" },
+    { en: "He works hard so that he can succeed", pt: "Ele trabalha duro para poder ter sucesso" },
+    { en: "I wonder what time the movie starts tonight", pt: "Eu me pergunto que horas o filme começa hoje" },
+  ],
+};
 
 function shuffle(arr) {
   const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
   return a;
 }
-
 function buildRound(sentence) {
-  const words = sentence.en.split(" ").map((w, i) => ({ id: `${i}-${w}`, text: w }));
-  return shuffle(words);
+  return shuffle(sentence.en.split(" ").map((w, i) => ({ id: `${i}-${w}`, text: w })));
 }
-
-function pickSentence(excludeEn) {
-  const pool = SENTENCES.filter((s) => s.en !== excludeEn);
+function pickSentence(list, excludeEn) {
+  const pool = list.filter((s) => s.en !== excludeEn);
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
 export default function FraseEmbaralhada({ onExit }) {
-  const [current, setCurrent] = useState(() => pickSentence(null));
-  const [pool, setPool] = useState(() => buildRound(current));
+  const [level, setLevel] = useState(null);
+  const [current, setCurrent] = useState(null);
+  const [pool, setPool] = useState([]);
   const [answer, setAnswer] = useState([]);
-  const [checked, setChecked] = useState(null); // null | true | false
+  const [checked, setChecked] = useState(null);
+
+  if (!level) {
+    return (
+      <LevelMenu accent={ACCENT} gameName="Frase Embaralhada" onExit={onExit}
+        onSelect={(l) => { const s = pickSentence(BANKS[l], null); setLevel(l); setCurrent(s); setPool(buildRound(s)); setAnswer([]); setChecked(null); }} />
+    );
+  }
 
   function addToAnswer(word) {
     if (checked) return;
-    setAnswer((a) => [...a, word]);
-    setPool((p) => p.filter((w) => w.id !== word.id));
-    setChecked(null);
+    setAnswer((a) => [...a, word]); setPool((p) => p.filter((w) => w.id !== word.id)); setChecked(null);
   }
-
   function removeFromAnswer(word) {
     if (checked === true) return;
-    setAnswer((a) => a.filter((w) => w.id !== word.id));
-    setPool((p) => [...p, word]);
-    setChecked(null);
+    setAnswer((a) => a.filter((w) => w.id !== word.id)); setPool((p) => [...p, word]); setChecked(null);
   }
-
   function verify() {
     const built = answer.map((w) => w.text).join(" ").toLowerCase();
     setChecked(built === current.en.toLowerCase());
   }
-
   function nextSentence() {
-    const s = pickSentence(current.en);
-    setCurrent(s);
-    setPool(buildRound(s));
-    setAnswer([]);
-    setChecked(null);
+    const s = pickSentence(BANKS[level], current.en);
+    setCurrent(s); setPool(buildRound(s)); setAnswer([]); setChecked(null);
   }
+  function changeLevel() { setLevel(null); }
 
   return (
     <div style={styles.wrap}>
-      <div style={styles.topBar}>
-        <button style={styles.backBtn} onClick={onExit}>← jogos</button>
-      </div>
-
+      <div style={styles.topBar}><button style={styles.backBtn} onClick={changeLevel}>← nível</button></div>
       <div style={styles.card}>
         <span style={{ ...styles.entryNo, color: ACCENT }}>FRASE EMBARALHADA</span>
         <p style={styles.intro}>Toque nas palavras na ordem certa para formar a frase. Dica: {current.pt}</p>
-
         <div style={styles.answerRow}>
           {answer.length === 0 && <span style={styles.placeholder}>toque nas palavras abaixo…</span>}
           {answer.map((w) => (
-            <button key={w.id} onClick={() => removeFromAnswer(w)} style={{ ...styles.wordBtn, background: "#FFFFFF", borderColor: checked === true ? "#6B9080" : checked === false ? "#C65D57" : ACCENT, color: "#1B2735" }}>
-              {w.text}
-            </button>
+            <button key={w.id} onClick={() => removeFromAnswer(w)} style={{ ...styles.wordBtn, background: "#FFFFFF", borderColor: checked === true ? "#6B9080" : checked === false ? "#C65D57" : ACCENT, color: "#1B2735" }}>{w.text}</button>
           ))}
         </div>
-
         <div style={styles.poolRow}>
-          {pool.map((w) => (
-            <button key={w.id} onClick={() => addToAnswer(w)} style={styles.wordBtnPool}>
-              {w.text}
-            </button>
-          ))}
+          {pool.map((w) => <button key={w.id} onClick={() => addToAnswer(w)} style={styles.wordBtnPool}>{w.text}</button>)}
         </div>
-
         {checked === false && <p style={styles.wrongText}>Ainda não é isso — reorganize e tente de novo.</p>}
-
         <div style={styles.actions}>
-          {pool.length === 0 && checked !== true && (
-            <button style={{ ...styles.nextBtn, background: ACCENT }} onClick={verify}>Verificar</button>
-          )}
+          {pool.length === 0 && checked !== true && <button style={{ ...styles.nextBtn, background: ACCENT }} onClick={verify}>Verificar</button>}
           {checked === true && (
             <>
               <span style={{ ...styles.doneText, color: ACCENT }}>Certinho! 🎉</span>
