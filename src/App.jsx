@@ -7,13 +7,21 @@ import CacaPalavras from "./games/CacaPalavras";
 import Forca from "./games/Forca";
 import Criptograma from "./games/Criptograma";
 import Cruzadinha from "./games/Cruzadinha";
+import Memoria from "./games/Memoria";
+import FraseEmbaralhada from "./games/FraseEmbaralhada";
+import CompleteFrase from "./games/CompleteFrase";
+import OucaEscreva from "./games/OucaEscreva";
 
 const GAMES = [
-  { id: "verbario", title: "Verbário", desc: "Vocabulário por níveis, em forma de dicionário", available: true },
-  { id: "caca-palavras", title: "Caça-palavras", desc: "Ache as palavras escondidas na grade", available: true },
-  { id: "forca", title: "Forca", desc: "Adivinhe a palavra em inglês letra por letra", available: true },
-  { id: "criptograma", title: "Criptograma", desc: "Decifre a palavra trocando números por letras", available: true },
-  { id: "cruzadinha", title: "Cruzadinha", desc: "Palavras cruzadas com dicas em português", available: true },
+  { id: "verbario", title: "Verbário", desc: "Vocabulário por níveis, em forma de dicionário", available: true, color: "#E8A33D" },
+  { id: "caca-palavras", title: "Caça-palavras", desc: "Ache as palavras escondidas na grade", available: true, color: "#3F9C93" },
+  { id: "forca", title: "Forca", desc: "Adivinhe a palavra em inglês letra por letra", available: true, color: "#D96C4F" },
+  { id: "criptograma", title: "Criptograma", desc: "Decifre a palavra trocando números por letras", available: true, color: "#8B7FD9" },
+  { id: "cruzadinha", title: "Cruzadinha", desc: "Palavras cruzadas com dicas em português", available: true, color: "#4C9A6A" },
+  { id: "memoria", title: "Memória", desc: "Case a palavra em inglês com o significado", available: true, color: "#D9578F" },
+  { id: "frase-embaralhada", title: "Frase Embaralhada", desc: "Reorganize as palavras na ordem certa", available: true, color: "#3E86C9" },
+  { id: "complete-frase", title: "Complete a Frase", desc: "Escolha a palavra certa para a frase", available: true, color: "#B8962E" },
+  { id: "ouca-escreva", title: "Ouça e Escreva", desc: "Ouça a palavra em inglês e escreva o que entendeu", available: true, color: "#B23A48" },
 ];
 
 export default function App() {
@@ -62,7 +70,11 @@ export default function App() {
     }
   }
 
-  function openGame(id) {
+  function openEditName() {
+    setNameInput(profile?.name || "");
+    setRegError("");
+    setScreen("register");
+  }
     setActiveGame(id);
     setScreen("game");
   }
@@ -87,7 +99,12 @@ export default function App() {
       <div style={styles.frame}>
         <header style={styles.header}>
           <div style={styles.brand}><span style={styles.brandMark}>§</span> Verbário</div>
-          {profile && screen !== "game" && <span style={styles.whoami}>{profile.name}</span>}
+          {profile && screen !== "game" && (
+            <span style={styles.whoamiRow}>
+              <span style={styles.whoami}>{profile.name}</span>
+              <button style={styles.editNameBtn} onClick={openEditName}>trocar nome</button>
+            </span>
+          )}
         </header>
 
         {screen === "loading" && (
@@ -96,8 +113,8 @@ export default function App() {
 
         {screen === "register" && (
           <main style={styles.card}>
-            <span style={styles.eyebrow}>CADASTRO</span>
-            <h1 style={styles.h1}>Como podemos te chamar?</h1>
+            <span style={styles.eyebrow}>{profile ? "TROCAR NOME" : "CADASTRO"}</span>
+            <h1 style={styles.h1}>{profile ? "Qual o novo nome?" : "Como podemos te chamar?"}</h1>
             <p style={styles.intro}>Seu nome guarda seu recorde e aparece no placar geral.</p>
             <input
               className="reg-input"
@@ -109,7 +126,12 @@ export default function App() {
               maxLength={24}
             />
             {regError && <span style={styles.errorText}>{regError}</span>}
-            <button style={{ ...styles.nextBtn, marginTop: 14, alignSelf: "flex-start" }} onClick={handleRegister}>Salvar e continuar →</button>
+            <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
+              <button style={styles.nextBtn} onClick={handleRegister}>Salvar e continuar →</button>
+              {profile && (
+                <button style={styles.ghostBtn} onClick={() => setScreen("hub")}>Cancelar</button>
+              )}
+            </div>
           </main>
         )}
 
@@ -124,9 +146,14 @@ export default function App() {
                   className="game-card"
                   disabled={!g.available}
                   onClick={() => g.available && openGame(g.id)}
-                  style={{ ...styles.gameCard, opacity: g.available ? 1 : 0.5, cursor: g.available ? "pointer" : "default" }}
+                  style={{
+                    ...styles.gameCard,
+                    opacity: g.available ? 1 : 0.5,
+                    cursor: g.available ? "pointer" : "default",
+                    borderLeft: `5px solid ${g.color}`,
+                  }}
                 >
-                  <span style={styles.gameTitle}>{g.title}</span>
+                  <span style={{ ...styles.gameTitle, color: g.available ? g.color : "#1B2735" }}>{g.title}</span>
                   <span style={styles.gameDesc}>{g.desc}</span>
                   {!g.available && <span style={styles.soonTag}>Em breve</span>}
                 </button>
@@ -142,6 +169,10 @@ export default function App() {
         {screen === "game" && activeGame === "forca" && <Forca onExit={exitGame} />}
         {screen === "game" && activeGame === "criptograma" && <Criptograma onExit={exitGame} />}
         {screen === "game" && activeGame === "cruzadinha" && <Cruzadinha onExit={exitGame} />}
+        {screen === "game" && activeGame === "memoria" && <Memoria onExit={exitGame} />}
+        {screen === "game" && activeGame === "frase-embaralhada" && <FraseEmbaralhada onExit={exitGame} />}
+        {screen === "game" && activeGame === "complete-frase" && <CompleteFrase onExit={exitGame} />}
+        {screen === "game" && activeGame === "ouca-escreva" && <OucaEscreva onExit={exitGame} />}
 
         <div style={styles.adSlot}><span style={styles.adLabel}>espaço reservado para anúncio (banner)</span></div>
       </div>
@@ -156,6 +187,8 @@ const styles = {
   brand: { fontFamily: "'Fraunces', serif", fontWeight: 700, fontSize: 20, letterSpacing: 0.2, display: "flex", alignItems: "center", gap: 6 },
   brandMark: { color: "#E8A33D", fontSize: 22 },
   whoami: { fontSize: 12, color: "#C9C2AC" },
+  whoamiRow: { display: "flex", alignItems: "center", gap: 8 },
+  editNameBtn: { background: "none", border: "none", color: "#E8A33D", fontSize: 11, cursor: "pointer", fontFamily: "'IBM Plex Mono', monospace", padding: 0, textDecoration: "underline" },
   card: { background: "#F7F3E9", borderRadius: 4, padding: "22px 22px 18px", boxShadow: "0 12px 30px rgba(0,0,0,0.35)", border: "1px solid #D8D0BC", minHeight: 380, display: "flex", flexDirection: "column" },
   centered: { margin: "auto" },
   eyebrow: { fontSize: 11, color: "#9A9280", letterSpacing: 1 },
@@ -164,6 +197,7 @@ const styles = {
   input: { marginTop: 16, padding: "12px 14px", borderRadius: 3, border: "1.5px solid #D8D0BC", fontSize: 15, fontFamily: "'IBM Plex Mono', monospace", background: "#FFFFFF", color: "#1B2735" },
   errorText: { color: "#C65D57", fontSize: 12, marginTop: 6 },
   nextBtn: { background: "#1B2735", color: "#F7F3E9", border: "none", borderRadius: 3, padding: "10px 16px", fontSize: 13, fontFamily: "'IBM Plex Mono', monospace", cursor: "pointer" },
+  ghostBtn: { background: "none", color: "#1B2735", border: "1.5px solid #D8D0BC", borderRadius: 3, padding: "10px 16px", fontSize: 13, fontFamily: "'IBM Plex Mono', monospace", cursor: "pointer" },
   gameList: { display: "flex", flexDirection: "column", gap: 10, marginTop: 18 },
   gameCard: { textAlign: "left", background: "#FFFFFF", border: "1.5px solid #D8D0BC", borderRadius: 3, padding: "14px 16px", display: "flex", flexDirection: "column", gap: 2, position: "relative" },
   gameTitle: { fontFamily: "'Fraunces', serif", fontSize: 19, fontWeight: 700, color: "#1B2735" },

@@ -15,6 +15,7 @@ const WORD_LIST = [
 
 const ALPHABET = "abcdefghijklmnopqrstuvwxyz".split("");
 const MAX_WRONG = 6;
+const ACCENT = "#D96C4F";
 
 function pickWord(excludeEn) {
   const pool = WORD_LIST.filter((w) => w.en !== excludeEn);
@@ -48,11 +49,11 @@ export default function Forca({ onExit }) {
     <div style={styles.wrap}>
       <div style={styles.topBar}>
         <button style={styles.backBtn} onClick={onExit}>← jogos</button>
-        <span style={styles.hudItem}>{MAX_WRONG - wrong} tentativas</span>
+        <span style={{ ...styles.hudItem, color: ACCENT, fontWeight: 700 }}>{MAX_WRONG - wrong} tentativas</span>
       </div>
 
       <div style={styles.card}>
-        <span style={styles.entryNo}>FORCA</span>
+        <span style={{ ...styles.entryNo, color: ACCENT, fontWeight: 700 }}>FORCA</span>
         <p style={styles.hint}>Dica: {current.pt}</p>
 
         <svg viewBox="0 0 120 120" style={styles.gallow}>
@@ -60,12 +61,12 @@ export default function Forca({ onExit }) {
           <line x1="25" y1="110" x2="25" y2="15" stroke="#1B2735" strokeWidth="3" />
           <line x1="25" y1="15" x2="80" y2="15" stroke="#1B2735" strokeWidth="3" />
           <line x1="80" y1="15" x2="80" y2="30" stroke="#1B2735" strokeWidth="3" />
-          {wrong > 0 && <circle cx="80" cy="42" r="12" stroke="#C65D57" strokeWidth="3" fill="none" />}
-          {wrong > 1 && <line x1="80" y1="54" x2="80" y2="85" stroke="#C65D57" strokeWidth="3" />}
-          {wrong > 2 && <line x1="80" y1="62" x2="65" y2="75" stroke="#C65D57" strokeWidth="3" />}
-          {wrong > 3 && <line x1="80" y1="62" x2="95" y2="75" stroke="#C65D57" strokeWidth="3" />}
-          {wrong > 4 && <line x1="80" y1="85" x2="68" y2="102" stroke="#C65D57" strokeWidth="3" />}
-          {wrong > 5 && <line x1="80" y1="85" x2="92" y2="102" stroke="#C65D57" strokeWidth="3" />}
+          {wrong > 0 && <circle cx="80" cy="42" r="12" stroke={ACCENT} strokeWidth="3" fill="none" />}
+          {wrong > 1 && <line x1="80" y1="54" x2="80" y2="85" stroke={ACCENT} strokeWidth="3" />}
+          {wrong > 2 && <line x1="80" y1="62" x2="65" y2="75" stroke={ACCENT} strokeWidth="3" />}
+          {wrong > 3 && <line x1="80" y1="62" x2="95" y2="75" stroke={ACCENT} strokeWidth="3" />}
+          {wrong > 4 && <line x1="80" y1="85" x2="68" y2="102" stroke={ACCENT} strokeWidth="3" />}
+          {wrong > 5 && <line x1="80" y1="85" x2="92" y2="102" stroke={ACCENT} strokeWidth="3" />}
         </svg>
 
         <div style={styles.wordRow}>
@@ -103,7 +104,7 @@ export default function Forca({ onExit }) {
             <span style={{ ...styles.doneText, color: won ? "#3E5C4C" : "#8B3E38" }}>
               {won ? "Acertou! 🎉" : `A palavra era "${current.en}"`}
             </span>
-            <button style={styles.nextBtn} onClick={nextWord}>Próxima palavra</button>
+            <button style={{ ...styles.nextBtn, background: ACCENT }} onClick={nextWord}>Próxima palavra</button>
           </div>
         )}
       </div>

@@ -1,5 +1,7 @@
 import { useState, useMemo, useRef } from "react";
 
+const ACCENT = "#8B7FD9";
+
 const WORD_LIST = [
   { en: "WONDERFUL", pt: "maravilhoso" },
   { en: "DISTANCE", pt: "distância" },
@@ -80,7 +82,7 @@ export default function Criptograma({ onExit }) {
       </div>
 
       <div style={styles.card}>
-        <span style={styles.entryNo}>CRIPTOGRAMA</span>
+        <span style={{ ...styles.entryNo, color: ACCENT, fontWeight: 700 }}>CRIPTOGRAMA</span>
         <p style={styles.hint}>Dica: {current.pt}. Cada número é sempre a mesma letra.</p>
 
         <div style={styles.puzzleRow}>
@@ -100,7 +102,7 @@ export default function Criptograma({ onExit }) {
                   style={{
                     ...styles.letterInput,
                     borderColor: isRevealed ? "#B08A3E" : guess ? (isCorrect ? "#6B9080" : "#C65D57") : "#D8D0BC",
-                    color: isRevealed ? "#B08A3E" : isCorrect ? "#3E5C4C" : "#1B2735",
+                    color: isRevealed ? "#B08A3E" : isCorrect ? ACCENT : "#1B2735",
                     background: isRevealed ? "#FCEFD9" : "#FFFFFF",
                   }}
                 />
@@ -111,13 +113,13 @@ export default function Criptograma({ onExit }) {
         </div>
 
         {!solved ? (
-          <button style={{ ...styles.ghostBtn, marginTop: 18, alignSelf: "flex-start" }} onClick={revealLetter}>
+          <button style={{ ...styles.ghostBtn, marginTop: 18, alignSelf: "flex-start", borderColor: ACCENT, color: ACCENT }} onClick={revealLetter}>
             Revelar uma letra
           </button>
         ) : (
           <div style={styles.overActions}>
-            <span style={styles.doneText}>Decifrou! 🎉</span>
-            <button style={styles.nextBtn} onClick={nextWord}>Próxima palavra</button>
+            <span style={{ ...styles.doneText, color: ACCENT }}>Decifrou! 🎉</span>
+            <button style={{ ...styles.nextBtn, background: ACCENT }} onClick={nextWord}>Próxima palavra</button>
           </div>
         )}
       </div>

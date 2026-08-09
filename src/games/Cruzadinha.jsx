@@ -1,5 +1,7 @@
 import { useState, useMemo } from "react";
 
+const ACCENT = "#4C9A6A";
+
 const WORD_BANK = [
   { en: "WATER", pt: "Água" },
   { en: "EARTH", pt: "Terra" },
@@ -143,7 +145,7 @@ export default function Cruzadinha({ onExit }) {
       </div>
 
       <div style={styles.card}>
-        <span style={styles.entryNo}>CRUZADINHA</span>
+        <span style={{ ...styles.entryNo, color: ACCENT, fontWeight: 700 }}>CRUZADINHA</span>
         <p style={styles.intro}>Preencha com as palavras em inglês a partir das dicas em português.</p>
 
         <div style={{ ...styles.grid, gridTemplateColumns: `repeat(${puzzle.cols}, 1fr)` }}>
@@ -186,15 +188,15 @@ export default function Cruzadinha({ onExit }) {
         </div>
 
         {!allFilled || !checked ? (
-          <button style={{ ...styles.nextBtn, marginTop: 16, alignSelf: "flex-start" }} onClick={() => setChecked(true)}>
+          <button style={{ ...styles.nextBtn, marginTop: 16, alignSelf: "flex-start", background: ACCENT }} onClick={() => setChecked(true)}>
             Verificar
           </button>
         ) : null}
 
         {checked && allFilled && (
           <div style={styles.overActions}>
-            <span style={styles.doneText}>Completou! 🎉</span>
-            <button style={styles.nextBtn} onClick={restart}>Jogar de novo</button>
+            <span style={{ ...styles.doneText, color: ACCENT }}>Completou! 🎉</span>
+            <button style={{ ...styles.nextBtn, background: ACCENT }} onClick={restart}>Jogar de novo</button>
           </div>
         )}
       </div>
