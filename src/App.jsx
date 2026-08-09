@@ -6,13 +6,14 @@ import Verbario from "./games/Verbario";
 import CacaPalavras from "./games/CacaPalavras";
 import Forca from "./games/Forca";
 import Criptograma from "./games/Criptograma";
+import Cruzadinha from "./games/Cruzadinha";
 
 const GAMES = [
   { id: "verbario", title: "Verbário", desc: "Vocabulário por níveis, em forma de dicionário", available: true },
   { id: "caca-palavras", title: "Caça-palavras", desc: "Ache as palavras escondidas na grade", available: true },
   { id: "forca", title: "Forca", desc: "Adivinhe a palavra em inglês letra por letra", available: true },
   { id: "criptograma", title: "Criptograma", desc: "Decifre a palavra trocando números por letras", available: true },
-  { id: "cruzadinha", title: "Cruzadinha", desc: "Palavras cruzadas com dicas em português", available: false },
+  { id: "cruzadinha", title: "Cruzadinha", desc: "Palavras cruzadas com dicas em português", available: true },
 ];
 
 export default function App() {
@@ -140,6 +141,7 @@ export default function App() {
         {screen === "game" && activeGame === "caca-palavras" && <CacaPalavras onExit={exitGame} />}
         {screen === "game" && activeGame === "forca" && <Forca onExit={exitGame} />}
         {screen === "game" && activeGame === "criptograma" && <Criptograma onExit={exitGame} />}
+        {screen === "game" && activeGame === "cruzadinha" && <Cruzadinha onExit={exitGame} />}
 
         <div style={styles.adSlot}><span style={styles.adLabel}>espaço reservado para anúncio (banner)</span></div>
       </div>
