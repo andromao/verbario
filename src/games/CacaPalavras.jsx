@@ -5,6 +5,7 @@ import { isExpertUnlocked, unlockExpert } from "../utils/progress";
 const GAME_ID = "caca-palavras";
 const ACCENT = "#3F9C93";
 const ACCENT_BG = "#E4F2F0";
+const PHASES = 3;
 
 const BANKS = {
   superbeginner: { size: 8, words: [
@@ -86,6 +87,8 @@ export default function CacaPalavras({ onExit }) {
   const [foundCells, setFoundCells] = useState(new Set());
   const [foundWords, setFoundWords] = useState(new Set());
   const [hintsUsed, setHintsUsed] = useState(0);
+  const [phase, setPhase] = useState(1);
+  const [totalScore, setTotalScore] = useState(0);
 
   const cellFromPoint = useCallback((x, y) => {
     const el = document.elementFromPoint(x, y);
@@ -93,7 +96,7 @@ export default function CacaPalavras({ onExit }) {
     return [Number(el.dataset.r), Number(el.dataset.c)];
   }, []);
 
-  if (!level) return <LevelMenu accent={ACCENT} gameName="Caça-palavras" onExit={onExit} expertUnlocked={isExpertUnlocked(GAME_ID)} onSelect={(l) => setLevel(l)} />;
+  if (!level) return <LevelMenu accent={ACCENT} gameName="Caça-palavras" onExit={onExit} expertUnlocked={isExpertUnlocked(GAME_ID)} onSelect={(l) => { setLevel(l); setPhase(1); setTotalScore(0); }} />;
 
   const allFound = foundWords.size === bank.words.length;
   const score = Math.max(foundWords.size * 10 - hintsUsed * 5, 0);
@@ -135,9 +138,17 @@ export default function CacaPalavras({ onExit }) {
   }
   function handlePointerUp() { if (dragging) finishSelection(path); }
 
-  function restart() {
+  function nextPhase() {
+    setTotalScore((s) => s + score);
     setStart(null); setPath([]); setDragging(false);
     setFoundCells(new Set()); setFoundWords(new Set()); setHintsUsed(0);
+    setPhase((p) => p + 1);
+    setRound((r) => r + 1);
+  }
+  function restartSession() {
+    setStart(null); setPath([]); setDragging(false);
+    setFoundCells(new Set()); setFoundWords(new Set()); setHintsUsed(0);
+    setPhase(1); setTotalScore(0);
     setRound((r) => r + 1);
   }
   function changeLevel() { setLevel(null); setFoundCells(new Set()); setFoundWords(new Set()); }
@@ -148,7 +159,7 @@ export default function CacaPalavras({ onExit }) {
     <div style={styles.wrap}>
       <div style={styles.topBar}>
         <button style={styles.backBtn} onClick={changeLevel}>← nível</button>
-        <span style={{ ...styles.hudItem, color: ACCENT }}>{foundWords.size}/{bank.words.length} · {score} pts</span>
+        <span style={{ ...styles.hudItem, color: ACCENT }}>Fase {phase}/{PHASES} · {foundWords.size}/{bank.words.length} · {totalScore + score} pts</span>
       </div>
       <div style={styles.card}>
         <span style={{ ...styles.entryNo, color: ACCENT }}>CAÇA-PALAVRAS</span>
@@ -173,10 +184,17 @@ export default function CacaPalavras({ onExit }) {
         {!allFound && (
           <button style={{ ...styles.ghostBtn, marginTop: 16, alignSelf: "flex-start", borderColor: ACCENT, color: ACCENT }} onClick={useHint}>💡 Revelar uma palavra</button>
         )}
-        {allFound && (
+        {allFound && phase < PHASES && (
           <div style={styles.overActions}>
-            <span style={{ ...styles.doneText, color: ACCENT }}>Encontrou todas! 🎉 {score} pts{level === "advanced" ? " · Nível Mestre destravado!" : ""}</span>
-            <button style={{ ...styles.nextBtn, background: ACCENT }} onClick={restart}>Jogar de novo</button>
+            <span style={{ ...styles.doneText, color: ACCENT }}>Fase {phase} completa! 🎉 {score} pts{level === "advanced" ? " · Nível Mestre destravado!" : ""}</span>
+            <button style={{ ...styles.nextBtn, background: ACCENT }} onClick={nextPhase}>Próxima fase →</button>
+          </div>
+        )}
+        {allFound && phase >= PHASES && (
+          <div style={styles.overActions}>
+            <span style={styles.overEyebrow}>Rodada completa · {PHASES} fases</span>
+            <span style={{ ...styles.doneText, color: ACCENT, fontSize: 24 }}>{totalScore + score} pts</span>
+            <button style={{ ...styles.nextBtn, background: ACCENT }} onClick={restartSession}>Jogar de novo</button>
           </div>
         )}
       </div>
@@ -199,5 +217,6 @@ const styles = {
   ghostBtn: { background: "none", border: "1.5px solid", borderRadius: 3, padding: "10px 16px", fontSize: 13, fontFamily: "'IBM Plex Mono', monospace", cursor: "pointer" },
   overActions: { marginTop: 16, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 },
   doneText: { fontFamily: "'Fraunces', serif", fontSize: 16, textAlign: "center" },
+  overEyebrow: { fontSize: 11, letterSpacing: 2, color: "#9A9280" },
   nextBtn: { color: "#F7F3E9", border: "none", borderRadius: 3, padding: "10px 16px", fontSize: 13, fontFamily: "'IBM Plex Mono', monospace", cursor: "pointer" },
 };

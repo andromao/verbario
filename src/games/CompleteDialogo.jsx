@@ -64,6 +64,7 @@ const BANKS = {
     { a: "It would be remiss of me not to mention the risks involved.", options: ["I appreciate you being thorough about it.", "The parking lot is full today.", "I usually walk to work."], answer: "I appreciate you being thorough about it.", pt: "Seria uma falha minha não mencionar os riscos envolvidos." },
     { a: "I'm not entirely convinced, but I'm willing to give it the benefit of the doubt.", options: ["That's all I ask — let's see how it plays out.", "The printer is out of ink again.", "I usually skip breakfast."], answer: "That's all I ask — let's see how it plays out.", pt: "Não estou totalmente convencido, mas estou disposto a dar um voto de confiança." },
     { a: "In hindsight, we probably should have consulted the team earlier.", options: ["Lesson learned — let's loop them in from now on.", "The building has a new elevator.", "I like my coffee black."], answer: "Lesson learned — let's loop them in from now on.", pt: "Em retrospecto, provavelmente deveríamos ter consultado o time antes." },
+    { a: "I hate to be the bearer of bad news, but the deal fell through.", options: ["That's disappointing, but let's regroup and figure out next steps.", "The bakery down the street is new.", "I usually take the stairs."], answer: "That's disappointing, but let's regroup and figure out next steps.", pt: "Odeio ser o portador de más notícias, mas o negócio não se concretizou." },
   ],
 };
 

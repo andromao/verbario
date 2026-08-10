@@ -47,6 +47,8 @@ const BANKS = {
     { en: "It was such a difficult decision that she asked for more time", pt: "Foi uma decisão tão difícil que ela pediu mais tempo" },
     { en: "By the time you read this I will already be gone", pt: "Quando você ler isso, eu já terei ido embora" },
     { en: "Little did they know that the plan would eventually fail", pt: "Eles mal sabiam que o plano acabaria falhando" },
+    { en: "She would have finished sooner had she not been interrupted", pt: "Ela teria terminado mais cedo se não tivesse sido interrompida" },
+    { en: "Whatever decision you make will have long lasting consequences", pt: "Qualquer decisão que você tomar terá consequências duradouras" },
   ],
 };
 

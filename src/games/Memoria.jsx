@@ -7,23 +7,28 @@ const ACCENT = "#D9578F";
 
 const BANKS = {
   superbeginner: [
-    { en: "cat", pt: "gato" }, { en: "dog", pt: "cachorro" }, { en: "sun", pt: "sol" }, { en: "red", pt: "vermelho" }, { en: "hat", pt: "chapéu" }, { en: "ten", pt: "dez" },
+    { en: "cat", pt: "gato" }, { en: "dog", pt: "cachorro" }, { en: "sun", pt: "sol" }, { en: "red", pt: "vermelho" }, { en: "hat", pt: "chapéu" },
+    { en: "ten", pt: "dez" }, { en: "big", pt: "grande" }, { en: "run", pt: "correr" }, { en: "bed", pt: "cama" }, { en: "yes", pt: "sim" },
   ],
   beginner: [
     { en: "book", pt: "livro" }, { en: "pen", pt: "caneta" }, { en: "cup", pt: "xícara" }, { en: "moon", pt: "lua" },
     { en: "star", pt: "estrela" }, { en: "fish", pt: "peixe" }, { en: "bird", pt: "pássaro" }, { en: "tree", pt: "árvore" },
+    { en: "door", pt: "porta" }, { en: "rain", pt: "chuva" },
   ],
   intermediate: [
     { en: "chair", pt: "cadeira" }, { en: "window", pt: "janela" }, { en: "friend", pt: "amigo" }, { en: "school", pt: "escola" },
     { en: "garden", pt: "jardim" }, { en: "kitchen", pt: "cozinha" }, { en: "street", pt: "rua" }, { en: "family", pt: "família" },
+    { en: "morning", pt: "manhã" }, { en: "weather", pt: "clima" },
   ],
   advanced: [
     { en: "knowledge", pt: "conhecimento" }, { en: "opportunity", pt: "oportunidade" }, { en: "environment", pt: "meio ambiente" }, { en: "experience", pt: "experiência" },
     { en: "imagination", pt: "imaginação" }, { en: "responsibility", pt: "responsabilidade" }, { en: "communication", pt: "comunicação" }, { en: "government", pt: "governo" },
+    { en: "challenge", pt: "desafio" }, { en: "adventure", pt: "aventura" },
   ],
   expert: [
     { en: "consciousness", pt: "consciência" }, { en: "entrepreneur", pt: "empreendedor" }, { en: "surveillance", pt: "vigilância" }, { en: "accomplishment", pt: "realização" },
-    { en: "sophisticated", pt: "sofisticado" }, { en: "misunderstanding", pt: "mal-entendido" },
+    { en: "sophisticated", pt: "sofisticado" }, { en: "misunderstanding", pt: "mal-entendido" }, { en: "characteristic", pt: "característica" }, { en: "extraordinary", pt: "extraordinário" },
+    { en: "unbelievable", pt: "inacreditável" }, { en: "photographer", pt: "fotógrafo" },
   ],
 };
 

@@ -7,16 +7,18 @@ const ACCENT = "#2E9B8F";
 
 const BANKS = {
   superbeginner: [
-    { text: '"Happy" significa feliz.', answer: true }, { text: '"Angry" significa calmo.', answer: false },
-    { text: '"Fast" é o oposto de "slow".', answer: true }, { text: '"Soothe" significa irritar.', answer: false },
-    { text: '"Sturdy" significa robusto.', answer: true }, { text: '"Clutter" significa ordem.', answer: false },
-    { text: '"Smile" significa sorriso.', answer: true }, { text: '"Cloud" significa nuvem.', answer: true },
-    { text: '"Dream" significa pesadelo.', answer: false }, { text: '"Beach" significa montanha.', answer: false },
+    { text: '"Cat" significa gato.', answer: true }, { text: '"Dog" significa gato.', answer: false },
+    { text: '"Red" é uma cor.', answer: true }, { text: '"Run" significa dormir.', answer: false },
+    { text: '"Big" significa grande.', answer: true }, { text: '"Sun" significa lua.', answer: false },
+    { text: '"Hat" significa chapéu.', answer: true }, { text: '"Eat" significa comer.', answer: true },
+    { text: '"Ten" significa cinco.', answer: false }, { text: '"Yes" significa não.', answer: false },
   ],
   beginner: [
     { text: '"Happy" significa feliz.', answer: true }, { text: '"Angry" significa calmo.', answer: false },
     { text: '"Fast" é o oposto de "slow".', answer: true }, { text: '"Soothe" significa irritar.', answer: false },
     { text: '"Sturdy" significa robusto.', answer: true }, { text: '"Clutter" significa ordem.', answer: false },
+    { text: '"Smile" significa sorriso.', answer: true }, { text: '"Cloud" significa nuvem.', answer: true },
+    { text: '"Dream" significa pesadelo.', answer: false }, { text: '"Beach" significa montanha.', answer: false },
   ],
   intermediate: [
     { text: '"Linger" significa demorar-se.', answer: true }, { text: '"Thrive" significa desistir.', answer: false },

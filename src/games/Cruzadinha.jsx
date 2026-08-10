@@ -4,6 +4,7 @@ import { isExpertUnlocked, unlockExpert } from "../utils/progress";
 
 const GAME_ID = "cruzadinha";
 const ACCENT = "#4C9A6A";
+const PHASES = 3;
 
 const BANKS = {
   superbeginner: [
@@ -119,9 +120,11 @@ export default function Cruzadinha({ onExit }) {
   const puzzle = useMemo(() => (level ? buildPuzzle(BANKS[level]) : null), [round, level]);
   const [answers, setAnswers] = useState({});
   const [checked, setChecked] = useState(false);
+  const [phase, setPhase] = useState(1);
+  const [totalScore, setTotalScore] = useState(0);
   const inputRefs = useRef({});
 
-  if (!level) return <LevelMenu accent={ACCENT} gameName="Cruzadinha" onExit={onExit} expertUnlocked={isExpertUnlocked(GAME_ID)} onSelect={(l) => { setLevel(l); setAnswers({}); setChecked(false); }} />;
+  if (!level) return <LevelMenu accent={ACCENT} gameName="Cruzadinha" onExit={onExit} expertUnlocked={isExpertUnlocked(GAME_ID)} onSelect={(l) => { setLevel(l); setAnswers({}); setChecked(false); setPhase(1); setTotalScore(0); }} />;
 
   const across = puzzle.placements.filter((p) => p.dir === "H").sort((a, b) => a.number - b.number);
   const down = puzzle.placements.filter((p) => p.dir === "V").sort((a, b) => a.number - b.number);
@@ -163,7 +166,8 @@ export default function Cruzadinha({ onExit }) {
       return next;
     });
   }
-  function nextPuzzle() { setAnswers({}); setChecked(false); setRound((r) => r + 1); }
+  function nextPhase() { setTotalScore((s) => s + score); setAnswers({}); setChecked(false); setPhase((p) => p + 1); setRound((r) => r + 1); }
+  function restartSession() { setAnswers({}); setChecked(false); setPhase(1); setTotalScore(0); setRound((r) => r + 1); }
   function changeLevel() { setLevel(null); }
 
   const startNumbers = {};
@@ -173,7 +177,7 @@ export default function Cruzadinha({ onExit }) {
     <div style={styles.wrap}>
       <div style={styles.topBar}>
         <button style={styles.backBtn} onClick={changeLevel}>← nível</button>
-        <span style={{ ...styles.hudItem, color: ACCENT }}>{puzzle.placements.length} palavras</span>
+        <span style={{ ...styles.hudItem, color: ACCENT }}>Fase {phase}/{PHASES} · {puzzle.placements.length} palavras</span>
       </div>
       <div style={styles.card}>
         <span style={{ ...styles.entryNo, color: ACCENT, fontWeight: 700 }}>CRUZADINHA</span>
@@ -205,10 +209,18 @@ export default function Cruzadinha({ onExit }) {
         </div>
         {!allCorrect ? (
           <button style={{ ...styles.nextBtn, marginTop: 12, alignSelf: "flex-start", background: ACCENT }} onClick={() => setChecked(true)}>Verificar</button>
-        ) : (
+        ) : null}
+        {allCorrect && phase < PHASES && (
           <div style={styles.overActions}>
-            <span style={{ ...styles.doneText, color: ACCENT }}>Completou! 🎉 {score} pts{level === "advanced" ? " · Nível Mestre destravado!" : ""}</span>
-            <button style={{ ...styles.nextBtn, background: ACCENT }} onClick={nextPuzzle}>Próxima cruzadinha →</button>
+            <span style={{ ...styles.doneText, color: ACCENT }}>Fase {phase} completa! 🎉 {score} pts{level === "advanced" ? " · Nível Mestre destravado!" : ""}</span>
+            <button style={{ ...styles.nextBtn, background: ACCENT }} onClick={nextPhase}>Próxima fase →</button>
+          </div>
+        )}
+        {allCorrect && phase >= PHASES && (
+          <div style={styles.overActions}>
+            <span style={styles.overEyebrow}>Rodada completa · {PHASES} fases</span>
+            <span style={{ ...styles.doneText, color: ACCENT, fontSize: 24 }}>{totalScore + score} pts</span>
+            <button style={{ ...styles.nextBtn, background: ACCENT }} onClick={restartSession}>Jogar de novo</button>
           </div>
         )}
       </div>
@@ -238,4 +250,5 @@ const styles = {
   nextBtn: { color: "#F7F3E9", border: "none", borderRadius: 3, padding: "10px 16px", fontSize: 13, fontFamily: "'IBM Plex Mono', monospace", cursor: "pointer" },
   overActions: { marginTop: 14, display: "flex", flexDirection: "column", alignItems: "center", gap: 10 },
   doneText: { fontFamily: "'Fraunces', serif", fontSize: 16, textAlign: "center" },
+  overEyebrow: { fontSize: 11, letterSpacing: 2, color: "#9A9280" },
 };

@@ -7,6 +7,18 @@ const ACCENT = "#C77D3E";
 
 const BANKS = {
   superbeginner: [
+    { word: "big", type: "antônimo", answer: "small", options: ["small", "happy", "run", "red"], pt: "big = grande" },
+    { word: "hot", type: "antônimo", answer: "cold", options: ["cold", "fast", "book", "cat"], pt: "hot = quente" },
+    { word: "happy", type: "sinônimo", answer: "glad", options: ["glad", "sad", "angry", "tired"], pt: "happy = feliz" },
+    { word: "small", type: "antônimo", answer: "big", options: ["big", "slow", "sad", "cold"], pt: "small = pequeno" },
+    { word: "sad", type: "antônimo", answer: "happy", options: ["happy", "cold", "fast", "big"], pt: "sad = triste" },
+    { word: "good", type: "antônimo", answer: "bad", options: ["bad", "kind", "big", "slow"], pt: "good = bom" },
+    { word: "old", type: "antônimo", answer: "young", options: ["young", "happy", "cold", "fast"], pt: "old = velho" },
+    { word: "clean", type: "antônimo", answer: "dirty", options: ["dirty", "small", "hot", "kind"], pt: "clean = limpo" },
+    { word: "open", type: "antônimo", answer: "closed", options: ["closed", "happy", "big", "slow"], pt: "open = aberto" },
+    { word: "fast", type: "antônimo", answer: "slow", options: ["slow", "big", "kind", "red"], pt: "fast = rápido" },
+  ],
+  beginner: [
     { word: "fast", type: "antônimo", answer: "slow", options: ["slow", "big", "kind", "quiet"], pt: "fast = rápido" },
     { word: "start", type: "antônimo", answer: "finish", options: ["finish", "begin", "open", "run"], pt: "start = começar" },
     { word: "happy", type: "sinônimo", answer: "glad", options: ["glad", "angry", "tired", "bored"], pt: "happy = feliz" },
@@ -17,12 +29,6 @@ const BANKS = {
     { word: "cheap", type: "antônimo", answer: "expensive", options: ["expensive", "cheap", "old", "new"], pt: "cheap = barato" },
     { word: "loud", type: "antônimo", answer: "quiet", options: ["quiet", "fast", "big", "old"], pt: "loud = barulhento" },
     { word: "easy", type: "antônimo", answer: "difficult", options: ["difficult", "simple", "fast", "small"], pt: "easy = fácil" },
-  ],
-  beginner: [
-    { word: "fast", type: "antônimo", answer: "slow", options: ["slow", "big", "kind", "quiet"], pt: "fast = rápido" },
-    { word: "start", type: "antônimo", answer: "finish", options: ["finish", "begin", "open", "run"], pt: "start = começar" },
-    { word: "happy", type: "sinônimo", answer: "glad", options: ["glad", "angry", "tired", "bored"], pt: "happy = feliz" },
-    { word: "smart", type: "sinônimo", answer: "clever", options: ["clever", "lazy", "slow", "shy"], pt: "smart = inteligente" },
   ],
   intermediate: [
     { word: "brave", type: "sinônimo", answer: "courageous", options: ["courageous", "afraid", "weak", "quiet"], pt: "brave = corajoso" },
