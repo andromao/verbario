@@ -17,6 +17,7 @@ import CompleteDialogo from "./games/CompleteDialogo";
 import OrdeneDialogo from "./games/OrdeneDialogo";
 import PluralSingular from "./games/PluralSingular";
 import PreposicaoCerta from "./games/PreposicaoCerta";
+import SupportSection from "./components/SupportSection";
 
 const GAMES = [
   { id: "verbario", title: "Verbário", desc: "Vocabulário por níveis, em forma de dicionário", available: true, color: "#E8A33D" },
@@ -199,6 +200,7 @@ export default function App() {
         {screen === "game" && activeGame === "preposicao-certa" && <PreposicaoCerta onExit={exitGame} />}
 
         <div style={styles.adSlot}><span style={styles.adLabel}>espaço reservado para anúncio (banner)</span></div>
+        {screen === "hub" && <SupportSection />}
       </div>
     </div>
   );
