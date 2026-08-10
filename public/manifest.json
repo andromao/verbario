@@ -1,16 +1,25 @@
 {
+  "id": "/",
   "name": "Verbário - Jogos para estudar inglês",
   "short_name": "Verbário",
   "description": "Vários jogos para estudar inglês: vocabulário, gramática, conversação e mais.",
+  "lang": "pt-BR",
+  "dir": "ltr",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait",
   "background_color": "#1B2735",
   "theme_color": "#1B2735",
+  "categories": ["education", "games"],
   "icons": [
     { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
     { "src": "/icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Verbário (vocabulário)", "short_name": "Verbário", "url": "/", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Caça-palavras", "short_name": "Caça-palavras", "url": "/", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] }
   ]
 }
