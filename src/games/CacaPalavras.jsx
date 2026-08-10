@@ -9,23 +9,27 @@ const ACCENT_BG = "#E4F2F0";
 const BANKS = {
   superbeginner: { size: 8, words: [
     { en: "CAT", pt: "gato" }, { en: "DOG", pt: "cachorro" }, { en: "SUN", pt: "sol" }, { en: "RED", pt: "vermelho" },
-    { en: "BIG", pt: "grande" }, { en: "HAT", pt: "chapéu" },
+    { en: "BIG", pt: "grande" }, { en: "HAT", pt: "chapéu" }, { en: "TEN", pt: "dez" }, { en: "RUN", pt: "correr" },
   ]},
   beginner: { size: 10, words: [
     { en: "APPLE", pt: "maçã" }, { en: "HOUSE", pt: "casa" }, { en: "WATER", pt: "água" }, { en: "MUSIC", pt: "música" },
     { en: "LIGHT", pt: "luz" }, { en: "HAPPY", pt: "feliz" }, { en: "DREAM", pt: "sonho" }, { en: "SMILE", pt: "sorriso" },
+    { en: "BEACH", pt: "praia" }, { en: "CLOUD", pt: "nuvem" },
   ]},
-  intermediate: { size: 11, words: [
+  intermediate: { size: 12, words: [
     { en: "GARDEN", pt: "jardim" }, { en: "PEOPLE", pt: "pessoas" }, { en: "KITCHEN", pt: "cozinha" }, { en: "JOURNEY", pt: "jornada" },
     { en: "PICTURE", pt: "figura" }, { en: "WEATHER", pt: "clima" }, { en: "ANIMAL", pt: "animal" }, { en: "MORNING", pt: "manhã" },
+    { en: "FRIEND", pt: "amigo" }, { en: "STREET", pt: "rua" },
   ]},
-  advanced: { size: 13, words: [
+  advanced: { size: 14, words: [
     { en: "MOUNTAIN", pt: "montanha" }, { en: "ELEPHANT", pt: "elefante" }, { en: "BUILDING", pt: "prédio" }, { en: "HOSPITAL", pt: "hospital" },
     { en: "UMBRELLA", pt: "guarda-chuva" }, { en: "KNOWLEDGE", pt: "conhecimento" }, { en: "CHALLENGE", pt: "desafio" }, { en: "ADVENTURE", pt: "aventura" },
+    { en: "TRIANGLE", pt: "triângulo" }, { en: "CALENDAR", pt: "calendário" },
   ]},
-  expert: { size: 15, words: [
+  expert: { size: 16, words: [
     { en: "CONSCIOUSNESS", pt: "consciência" }, { en: "ACCOMPLISHMENT", pt: "realização" }, { en: "SURVEILLANCE", pt: "vigilância" },
     { en: "REFRIGERATOR", pt: "geladeira" }, { en: "PHOTOGRAPH", pt: "fotografia" }, { en: "ENTREPRENEUR", pt: "empreendedor" },
+    { en: "MISUNDERSTANDING", pt: "mal-entendido" }, { en: "SOPHISTICATED", pt: "sofisticado" },
   ]},
 };
 
@@ -37,7 +41,7 @@ function buildGrid(words, size) {
   const placements = [];
   for (const { en } of words) {
     let placed = false;
-    for (let attempt = 0; attempt < 200 && !placed; attempt++) {
+    for (let attempt = 0; attempt < 300 && !placed; attempt++) {
       const [dr, dc] = DIRS[Math.floor(Math.random() * DIRS.length)];
       let row, col;
       if (dr === 1) row = Math.floor(Math.random() * (size - en.length + 1));
@@ -82,28 +86,36 @@ export default function CacaPalavras({ onExit }) {
   const [foundCells, setFoundCells] = useState(new Set());
   const [foundWords, setFoundWords] = useState(new Set());
 
-  if (!level) return <LevelMenu accent={ACCENT} gameName="Caça-palavras" onExit={onExit} expertUnlocked={isExpertUnlocked(GAME_ID)} onSelect={(l) => setLevel(l)} />;
-
-  const allFound = foundWords.size === bank.words.length;
-  if (allFound && level === "advanced") unlockExpert(GAME_ID);
-
   const cellFromPoint = useCallback((x, y) => {
     const el = document.elementFromPoint(x, y);
     if (!el || !el.dataset || el.dataset.r === undefined) return null;
     return [Number(el.dataset.r), Number(el.dataset.c)];
   }, []);
 
+  if (!level) return <LevelMenu accent={ACCENT} gameName="Caça-palavras" onExit={onExit} expertUnlocked={isExpertUnlocked(GAME_ID)} onSelect={(l) => setLevel(l)} />;
+
+  const allFound = foundWords.size === bank.words.length;
+  if (allFound && level === "advanced") unlockExpert(GAME_ID);
+
+  function markWordFound(match) {
+    setFoundWords((prev) => new Set(prev).add(match.en));
+    setFoundCells((prev) => { const next = new Set(prev); match.cells.forEach(([r, c]) => next.add(keyOf(r, c))); return next; });
+  }
+
   function finishSelection(cells) {
     if (cells && cells.length > 1) {
       const word = cells.map(([r, c]) => grid[r][c]).join("");
       const wordRev = [...word].reverse().join("");
       const match = placements.find((p) => p.en === word || p.en === wordRev);
-      if (match && !foundWords.has(match.en)) {
-        setFoundWords((prev) => new Set(prev).add(match.en));
-        setFoundCells((prev) => { const next = new Set(prev); match.cells.forEach(([r, c]) => next.add(keyOf(r, c))); return next; });
-      }
+      if (match && !foundWords.has(match.en)) markWordFound(match);
     }
     setDragging(false); setStart(null); setPath([]);
+  }
+
+  function useHint() {
+    const remaining = placements.filter((p) => !foundWords.has(p.en));
+    if (remaining.length === 0) return;
+    markWordFound(remaining[Math.floor(Math.random() * remaining.length)]);
   }
 
   function handlePointerDown(r, c, e) {
@@ -155,6 +167,9 @@ export default function CacaPalavras({ onExit }) {
             <span key={w.en} style={{ ...styles.wordChip, textDecoration: foundWords.has(w.en) ? "line-through" : "none", opacity: foundWords.has(w.en) ? 0.5 : 1, borderColor: foundWords.has(w.en) ? ACCENT : "#D8D0BC" }}>{w.pt}</span>
           ))}
         </div>
+        {!allFound && (
+          <button style={{ ...styles.ghostBtn, marginTop: 16, alignSelf: "flex-start", borderColor: ACCENT, color: ACCENT }} onClick={useHint}>💡 Revelar uma palavra</button>
+        )}
         {allFound && (
           <div style={styles.overActions}>
             <span style={{ ...styles.doneText, color: ACCENT }}>Encontrou todas! 🎉{level === "advanced" ? " Nível Mestre destravado!" : ""}</span>
@@ -171,13 +186,14 @@ const styles = {
   topBar: { display: "flex", justifyContent: "space-between", alignItems: "center", color: "#E7E2D3" },
   backBtn: { background: "none", border: "none", color: "#C9C2AC", fontSize: 12, cursor: "pointer", fontFamily: "'IBM Plex Mono', monospace", padding: 0 },
   hudItem: { fontSize: 11, fontWeight: 700 },
-  card: { background: "#F7F3E9", borderRadius: 4, padding: "20px 16px 18px", boxShadow: "0 12px 30px rgba(0,0,0,0.35)", border: "1px solid #D8D0BC", display: "flex", flexDirection: "column" },
+  card: { background: "#F7F3E9", borderRadius: 4, padding: "clamp(14px,4vw,20px) clamp(10px,3vw,16px) 18px", boxShadow: "0 12px 30px rgba(0,0,0,0.35)", border: "1px solid #D8D0BC", display: "flex", flexDirection: "column" },
   entryNo: { fontSize: 11, letterSpacing: 1, fontWeight: 700 },
   intro: { fontSize: 12.5, color: "#5A6270", marginTop: 6, marginBottom: 14, lineHeight: 1.5 },
   grid: { display: "grid", gap: 2, background: "#D8D0BC", padding: 2, borderRadius: 3, userSelect: "none" },
-  cell: { aspectRatio: "1", border: "1.5px solid", fontSize: 9.5, fontFamily: "'IBM Plex Mono', monospace", fontWeight: 500, cursor: "pointer", padding: 0 },
+  cell: { aspectRatio: "1", border: "1.5px solid", fontSize: "clamp(8px,2.4vw,11px)", fontFamily: "'IBM Plex Mono', monospace", fontWeight: 500, cursor: "pointer", padding: 0 },
   wordList: { display: "flex", flexWrap: "wrap", gap: 8, marginTop: 16 },
   wordChip: { fontSize: 11.5, background: "#FFFFFF", border: "1px solid", borderRadius: 20, padding: "4px 10px", color: "#1B2735" },
+  ghostBtn: { background: "none", border: "1.5px solid", borderRadius: 3, padding: "10px 16px", fontSize: 13, fontFamily: "'IBM Plex Mono', monospace", cursor: "pointer" },
   overActions: { marginTop: 16, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 },
   doneText: { fontFamily: "'Fraunces', serif", fontSize: 16, textAlign: "center" },
   nextBtn: { color: "#F7F3E9", border: "none", borderRadius: 3, padding: "10px 16px", fontSize: 13, fontFamily: "'IBM Plex Mono', monospace", cursor: "pointer" },

@@ -83,6 +83,7 @@ export default function Verbario({ profile, firebaseUser, onExit }) {
   const [picked, setPicked] = useState(null);
   const [stamp, setStamp] = useState(null);
   const [choices, setChoices] = useState([]);
+  const [eliminated, setEliminated] = useState(new Set());
   const [timeLeft, setTimeLeft] = useState(12);
   const timerRef = useRef(null);
   const savedThisRound = useRef(false);
@@ -111,10 +112,18 @@ export default function Verbario({ profile, firebaseUser, onExit }) {
   useEffect(() => {
     if (screen !== "game" || !current) return;
     setChoices(shuffle(current.options));
+    setEliminated(new Set());
     setPicked(null);
     setStamp(null);
     setTimeLeft(12);
   }, [idx, deck, screen]);
+
+  function useHint() {
+    if (picked) return;
+    const wrongLeft = choices.filter((o) => o !== current.pt && !eliminated.has(o));
+    if (wrongLeft.length <= 1) return;
+    setEliminated((prev) => new Set(prev).add(wrongLeft[Math.floor(Math.random() * wrongLeft.length)]));
+  }
 
   useEffect(() => {
     if (screen !== "game" || picked) return;
@@ -269,6 +278,7 @@ export default function Verbario({ profile, firebaseUser, onExit }) {
           </div>
           <div style={styles.options}>
             {choices.map((opt) => {
+              if (eliminated.has(opt)) return null;
               const isCorrect = opt === current.pt;
               const isPicked = picked === opt;
               let bg = "#F7F3E9", border = "#D8D0BC", color = "#1B2735";
@@ -283,6 +293,9 @@ export default function Verbario({ profile, firebaseUser, onExit }) {
               );
             })}
           </div>
+          {!picked && (
+            <button style={{ ...styles.ghostBtn, marginTop: 12, alignSelf: "flex-start" }} onClick={useHint}>💡 Eliminar uma opção</button>
+          )}
           {stamp && (
             <div style={styles.stampRow}>
               <span style={{ ...styles.stampText, color: stamp === "CERTO" ? "#6B9080" : "#C65D57", borderColor: stamp === "CERTO" ? "#6B9080" : "#C65D57" }}>{stamp}</span>

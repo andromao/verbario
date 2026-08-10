@@ -60,6 +60,12 @@ export default function Forca({ onExit }) {
     setGuessed(next);
     if (!current.en.includes(letter)) setWrong((w) => w + 1);
   }
+  function useHint() {
+    if (over) return;
+    const missing = [...new Set(letters)].filter((l) => !guessed.has(l));
+    if (missing.length === 0) return;
+    setGuessed((prev) => new Set(prev).add(missing[Math.floor(Math.random() * missing.length)]));
+  }
   function nextWord() { setCurrent((c) => pickWord(BANKS[level], c.en)); setGuessed(new Set()); setWrong(0); }
   function changeLevel() { setLevel(null); }
 
@@ -97,6 +103,9 @@ export default function Forca({ onExit }) {
             })}
           </div>
         )}
+        {!over && (
+          <button style={{ ...styles.ghostBtn, marginTop: 14, borderColor: ACCENT, color: ACCENT }} onClick={useHint}>💡 Revelar uma letra</button>
+        )}
         {over && (
           <div style={styles.overActions}>
             <span style={{ ...styles.doneText, color: won ? "#3E5C4C" : "#8B3E38" }}>{won ? `Acertou! 🎉${level === "advanced" ? " Nível Mestre destravado!" : ""}` : `A palavra era "${current.en}"`}</span>
@@ -124,4 +133,5 @@ const styles = {
   overActions: { marginTop: 14, display: "flex", flexDirection: "column", alignItems: "center", gap: 10 },
   doneText: { fontFamily: "'Fraunces', serif", fontSize: 16, textAlign: "center" },
   nextBtn: { color: "#F7F3E9", border: "none", borderRadius: 3, padding: "10px 16px", fontSize: 13, fontFamily: "'IBM Plex Mono', monospace", cursor: "pointer" },
+  ghostBtn: { background: "none", border: "1.5px solid", borderRadius: 3, padding: "8px 12px", fontSize: 11.5, fontFamily: "'IBM Plex Mono', monospace", cursor: "pointer" },
 };

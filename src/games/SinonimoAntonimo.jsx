@@ -47,6 +47,7 @@ export default function SinonimoAntonimo({ onExit }) {
   const [order, setOrder] = useState([]);
   const [idx, setIdx] = useState(0);
   const [picked, setPicked] = useState(null);
+  const [eliminated, setEliminated] = useState(new Set());
   const [score, setScore] = useState(0);
 
   if (!level) {
@@ -62,8 +63,14 @@ export default function SinonimoAntonimo({ onExit }) {
   if (finished && score === items.length && level === "advanced") unlockExpert(GAME_ID);
 
   function choose(opt) { if (picked) return; setPicked(opt); if (opt === item.answer) setScore((s) => s + 1); }
-  function next() { setPicked(null); setIdx((i) => i + 1); }
-  function restart() { setIdx(0); setPicked(null); setScore(0); setOrder(shuffle(items.map((_, i) => i))); }
+  function useHint() {
+    if (picked) return;
+    const wrongLeft = item.options.filter((o) => o !== item.answer && !eliminated.has(o));
+    if (wrongLeft.length <= 1) return;
+    setEliminated((prev) => new Set(prev).add(wrongLeft[Math.floor(Math.random() * wrongLeft.length)]));
+  }
+  function next() { setPicked(null); setEliminated(new Set()); setIdx((i) => i + 1); }
+  function restart() { setIdx(0); setPicked(null); setEliminated(new Set()); setScore(0); setOrder(shuffle(items.map((_, i) => i))); }
   function changeLevel() { setLevel(null); }
 
   return (
@@ -81,12 +88,16 @@ export default function SinonimoAntonimo({ onExit }) {
             <p style={styles.hint}>({item.pt})</p>
             <div style={styles.options}>
               {item.options.map((opt) => {
+                if (eliminated.has(opt)) return null;
                 const isCorrect = opt === item.answer, isPicked = picked === opt;
                 let bg = "#FFFFFF", border = "#D8D0BC", color = "#1B2735";
                 if (picked) { if (isCorrect) { bg = "#F6EBDD"; border = ACCENT; color = "#8A501F"; } else if (isPicked) { bg = "#F4E4E2"; border = "#C65D57"; color = "#8B3E38"; } }
                 return <button key={opt} disabled={!!picked} onClick={() => choose(opt)} style={{ ...styles.optBtn, background: bg, borderColor: border, color }}>{opt}</button>;
               })}
             </div>
+            {!picked && (
+              <button style={{ ...styles.ghostBtn, marginTop: 12, alignSelf: "flex-start" }} onClick={useHint}>💡 Eliminar uma opção</button>
+            )}
             {picked && (
               <button style={{ ...styles.nextBtn, background: ACCENT, marginTop: 16, alignSelf: "flex-start" }} onClick={next}>
                 {idx + 1 >= order.length ? "Ver resultado →" : "Próxima →"}
@@ -117,6 +128,7 @@ const styles = {
   options: { display: "flex", flexDirection: "column", gap: 9, marginTop: 18 },
   optBtn: { textAlign: "left", padding: "12px 14px", borderRadius: 3, border: "1.5px solid", fontSize: 14.5, fontFamily: "'IBM Plex Mono', monospace", cursor: "pointer" },
   nextBtn: { color: "#FFFFFF", border: "none", borderRadius: 3, padding: "10px 16px", fontSize: 13, fontFamily: "'IBM Plex Mono', monospace", cursor: "pointer" },
+  ghostBtn: { background: "none", border: "1.5px solid #D8D0BC", borderRadius: 3, padding: "8px 12px", fontSize: 11.5, fontFamily: "'IBM Plex Mono', monospace", cursor: "pointer", color: "#1B2735" },
   overActions: { margin: "auto", display: "flex", flexDirection: "column", alignItems: "center", gap: 10 },
   doneText: { fontFamily: "'Fraunces', serif", fontSize: 22, textAlign: "center" },
 };

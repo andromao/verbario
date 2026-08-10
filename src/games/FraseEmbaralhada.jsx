@@ -72,6 +72,15 @@ export default function FraseEmbaralhada({ onExit }) {
     const built = answer.map((w) => w.text).join(" ").toLowerCase();
     setChecked(built === current.en.toLowerCase());
   }
+  function useHint() {
+    if (checked === true) return;
+    const correctWords = current.en.split(" ");
+    const nextCorrect = correctWords[answer.length];
+    if (!nextCorrect) return;
+    const match = pool.find((w) => w.text.toLowerCase() === nextCorrect.toLowerCase());
+    if (!match) return;
+    setAnswer((a) => [...a, match]); setPool((p) => p.filter((w) => w.id !== match.id)); setChecked(null);
+  }
   function nextSentence() {
     const s = pickSentence(BANKS[level], current.en);
     setCurrent(s); setPool(buildRound(s)); setAnswer([]); setChecked(null);
@@ -95,6 +104,9 @@ export default function FraseEmbaralhada({ onExit }) {
         </div>
         {checked === false && <p style={styles.wrongText}>Ainda não é isso — reorganize e tente de novo.</p>}
         <div style={styles.actions}>
+          {checked !== true && pool.length > 0 && (
+            <button style={{ ...styles.ghostBtn, borderColor: ACCENT, color: ACCENT }} onClick={useHint}>💡 Próxima palavra certa</button>
+          )}
           {pool.length === 0 && checked !== true && <button style={{ ...styles.nextBtn, background: ACCENT }} onClick={verify}>Verificar</button>}
           {checked === true && (
             <>
@@ -120,6 +132,7 @@ const styles = {
   poolRow: { display: "flex", flexWrap: "wrap", gap: 8, marginTop: 16 },
   wordBtn: { border: "1.5px solid", borderRadius: 20, padding: "7px 14px", fontSize: 13, fontFamily: "'IBM Plex Mono', monospace", cursor: "pointer" },
   wordBtnPool: { border: "1.5px solid #D8D0BC", background: "#FFFFFF", borderRadius: 20, padding: "7px 14px", fontSize: 13, fontFamily: "'IBM Plex Mono', monospace", cursor: "pointer", color: "#1B2735" },
+  ghostBtn: { background: "none", border: "1.5px solid", borderRadius: 3, padding: "8px 12px", fontSize: 11.5, fontFamily: "'IBM Plex Mono', monospace", cursor: "pointer" },
   wrongText: { fontSize: 12, color: "#C65D57", marginTop: 10 },
   actions: { marginTop: 16, display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 10 },
   doneText: { fontFamily: "'Fraunces', serif", fontSize: 16 },

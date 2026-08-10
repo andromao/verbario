@@ -58,6 +58,7 @@ export default function VerdadeiroFalso({ onExit }) {
   if (finished && score === items.length && level === "advanced") unlockExpert(GAME_ID);
 
   function choose(val) { if (picked !== null) return; setPicked(val); if (val === item.answer) setScore((s) => s + 1); }
+  function skip() { if (picked !== null) return; setIdx((i) => i + 1); }
   function next() { setPicked(null); setIdx((i) => i + 1); }
   function restart() { setIdx(0); setPicked(null); setScore(0); setOrder(shuffle(items.map((_, i) => i))); }
   function changeLevel() { setLevel(null); }
@@ -82,6 +83,9 @@ export default function VerdadeiroFalso({ onExit }) {
                 return <button key={label} disabled={picked !== null} onClick={() => choose(val)} style={{ ...styles.optBtn, background: bg, borderColor: border, color }}>{label}</button>;
               })}
             </div>
+            {picked === null && (
+              <button style={{ ...styles.ghostBtn, marginTop: 12, alignSelf: "flex-start" }} onClick={skip}>Pular esta</button>
+            )}
             {picked !== null && (
               <button style={{ ...styles.nextBtn, background: ACCENT, marginTop: 16, alignSelf: "flex-start" }} onClick={next}>
                 {idx + 1 >= order.length ? "Ver resultado →" : "Próxima →"}
@@ -110,6 +114,7 @@ const styles = {
   options: { display: "flex", gap: 10, marginTop: 20 },
   optBtn: { flex: 1, padding: "14px 10px", borderRadius: 3, border: "1.5px solid", fontSize: 14, fontFamily: "'IBM Plex Mono', monospace", cursor: "pointer", fontWeight: 600 },
   nextBtn: { color: "#FFFFFF", border: "none", borderRadius: 3, padding: "10px 16px", fontSize: 13, fontFamily: "'IBM Plex Mono', monospace", cursor: "pointer" },
+  ghostBtn: { background: "none", border: "1.5px solid #D8D0BC", borderRadius: 3, padding: "8px 12px", fontSize: 11.5, fontFamily: "'IBM Plex Mono', monospace", cursor: "pointer", color: "#1B2735" },
   overActions: { margin: "auto", display: "flex", flexDirection: "column", alignItems: "center", gap: 10 },
   doneText: { fontFamily: "'Fraunces', serif", fontSize: 22, textAlign: "center" },
 };

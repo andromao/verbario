@@ -53,6 +53,13 @@ export default function Memoria({ onExit }) {
   const won = matched.size === pairs.length;
   if (won && level === "advanced") unlockExpert(GAME_ID);
 
+  function useHint() {
+    if (busy) return;
+    const remaining = pairs.map((_, i) => i).filter((i) => !matched.has(i));
+    if (remaining.length === 0) return;
+    setMatched((prev) => new Set(prev).add(remaining[Math.floor(Math.random() * remaining.length)]));
+  }
+
   function handleClick(idx) {
     if (busy || flipped.includes(idx) || matched.has(deck[idx].pairId)) return;
     const next = [...flipped, idx];
@@ -89,6 +96,9 @@ export default function Memoria({ onExit }) {
             );
           })}
         </div>
+        {!won && (
+          <button style={{ ...styles.ghostBtn, marginTop: 14, alignSelf: "flex-start", borderColor: ACCENT, color: ACCENT }} onClick={useHint}>💡 Casar um par</button>
+        )}
         {won && (
           <div style={styles.overActions}>
             <span style={{ ...styles.doneText, color: ACCENT }}>Todos os pares! 🎉 ({moves} jogadas){level === "advanced" ? " Nível Mestre destravado!" : ""}</span>
@@ -113,4 +123,5 @@ const styles = {
   overActions: { marginTop: 18, display: "flex", flexDirection: "column", alignItems: "center", gap: 10 },
   doneText: { fontFamily: "'Fraunces', serif", fontSize: 14, textAlign: "center" },
   nextBtn: { color: "#F7F3E9", border: "none", borderRadius: 3, padding: "10px 16px", fontSize: 13, fontFamily: "'IBM Plex Mono', monospace", cursor: "pointer" },
+  ghostBtn: { background: "none", border: "1.5px solid", borderRadius: 3, padding: "8px 12px", fontSize: 11.5, fontFamily: "'IBM Plex Mono', monospace", cursor: "pointer" },
 };

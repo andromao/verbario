@@ -90,7 +90,7 @@ export default function App() {
   }
 
   return (
-    <div style={styles.page}>
+    <div style={styles.page} className="app-page">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,600&family=IBM+Plex+Mono:wght@400;500&display=swap');
         * { box-sizing: border-box; }
@@ -99,6 +99,11 @@ export default function App() {
         .game-card:hover:not(:disabled) { transform: translateY(-2px); border-color: #E8A33D; box-shadow: 0 8px 18px rgba(0,0,0,0.18); }
         .reg-input:focus { outline: 2px solid #E8A33D; outline-offset: 1px; }
         @media (prefers-reduced-motion: reduce) { .game-card { transition: none !important; } }
+        html, body, #root { height: 100%; }
+        .app-page { min-height: 100vh; }
+        @supports (height: 100dvh) { .app-page { min-height: 100dvh; } }
+        input, button { -webkit-tap-highlight-color: transparent; }
+        input[type="text"], input:not([type]) { font-size: 16px; }
       `}</style>
 
       <div style={styles.frame}>
@@ -188,7 +193,7 @@ export default function App() {
 }
 
 const styles = {
-  page: { minHeight: "100vh", width: "100%", background: "#1B2735", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px 16px", fontFamily: "'IBM Plex Mono', ui-monospace, monospace" },
+  page: { minHeight: "100vh", width: "100%", background: "#1B2735", display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "clamp(12px,4vw,24px) clamp(10px,4vw,16px)", fontFamily: "'IBM Plex Mono', ui-monospace, monospace", boxSizing: "border-box" },
   frame: { width: "100%", maxWidth: 440, display: "flex", flexDirection: "column", gap: 14 },
   header: { display: "flex", justifyContent: "space-between", alignItems: "center", color: "#E7E2D3" },
   brand: { fontFamily: "'Fraunces', serif", fontWeight: 700, fontSize: 20, letterSpacing: 0.2, display: "flex", alignItems: "center", gap: 6 },

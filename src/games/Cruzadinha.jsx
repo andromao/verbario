@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import LevelMenu from "../components/LevelMenu";
 import { isExpertUnlocked, unlockExpert } from "../utils/progress";
 
@@ -8,22 +8,32 @@ const ACCENT = "#4C9A6A";
 const BANKS = {
   superbeginner: [
     { en: "CAT", pt: "Gato" }, { en: "DOG", pt: "Cachorro" }, { en: "SUN", pt: "Sol" }, { en: "RED", pt: "Vermelho" }, { en: "TEN", pt: "Dez" },
+    { en: "BIG", pt: "Grande" }, { en: "HAT", pt: "Chapéu" }, { en: "RUN", pt: "Correr" }, { en: "EAT", pt: "Comer" }, { en: "YES", pt: "Sim" },
+    { en: "SEA", pt: "Mar" }, { en: "TOY", pt: "Brinquedo" }, { en: "EGG", pt: "Ovo" }, { en: "ANT", pt: "Formiga" }, { en: "ARM", pt: "Braço" },
   ],
   beginner: [
     { en: "STAR", pt: "Estrela" }, { en: "RAIN", pt: "Chuva" }, { en: "TREE", pt: "Árvore" }, { en: "BOOK", pt: "Livro" },
     { en: "DOOR", pt: "Porta" }, { en: "MOON", pt: "Lua" }, { en: "FISH", pt: "Peixe" }, { en: "BIRD", pt: "Pássaro" },
+    { en: "LAKE", pt: "Lago" }, { en: "SHIP", pt: "Navio" }, { en: "MILK", pt: "Leite" }, { en: "RICE", pt: "Arroz" },
+    { en: "SNOW", pt: "Neve" }, { en: "WIND", pt: "Vento" }, { en: "ROAD", pt: "Estrada" },
   ],
   intermediate: [
     { en: "WATER", pt: "Água" }, { en: "EARTH", pt: "Terra" }, { en: "HEART", pt: "Coração" }, { en: "TABLE", pt: "Mesa" },
-    { en: "APPLE", pt: "Maçã" }, { en: "LIGHT", pt: "Luz" }, { en: "NIGHT", pt: "Noite" }, { en: "RIVER", pt: "Rio" }, { en: "STORM", pt: "Tempestade" }, { en: "PLANT", pt: "Planta" },
+    { en: "APPLE", pt: "Maçã" }, { en: "LIGHT", pt: "Luz" }, { en: "NIGHT", pt: "Noite" }, { en: "RIVER", pt: "Rio" },
+    { en: "STORM", pt: "Tempestade" }, { en: "PLANT", pt: "Planta" }, { en: "HOUSE", pt: "Casa" }, { en: "MUSIC", pt: "Música" },
+    { en: "HAPPY", pt: "Feliz" }, { en: "DREAM", pt: "Sonho" }, { en: "SMILE", pt: "Sorriso" },
   ],
   advanced: [
     { en: "BUILDING", pt: "Prédio" }, { en: "HOSPITAL", pt: "Hospital" }, { en: "TRIANGLE", pt: "Triângulo" }, { en: "UMBRELLA", pt: "Guarda-chuva" },
     { en: "MOUNTAIN", pt: "Montanha" }, { en: "ELEPHANT", pt: "Elefante" }, { en: "DISTANCE", pt: "Distância" }, { en: "FAVORITE", pt: "Favorito" },
+    { en: "CALENDAR", pt: "Calendário" }, { en: "KNOWLEDGE", pt: "Conhecimento" }, { en: "CHALLENGE", pt: "Desafio" }, { en: "ADVENTURE", pt: "Aventura" },
+    { en: "GARDEN", pt: "Jardim" }, { en: "KITCHEN", pt: "Cozinha" }, { en: "JOURNEY", pt: "Jornada" },
   ],
   expert: [
     { en: "CONSCIOUSNESS", pt: "Consciência" }, { en: "ENTREPRENEUR", pt: "Empreendedor" }, { en: "SURVEILLANCE", pt: "Vigilância" },
-    { en: "PHOTOGRAPHER", pt: "Fotógrafo" }, { en: "REFRIGERATOR", pt: "Geladeira" },
+    { en: "PHOTOGRAPHER", pt: "Fotógrafo" }, { en: "REFRIGERATOR", pt: "Geladeira" }, { en: "ACCOMPLISHMENT", pt: "Realização" },
+    { en: "SOPHISTICATED", pt: "Sofisticado" }, { en: "MISUNDERSTANDING", pt: "Mal-entendido" }, { en: "CHARACTERISTIC", pt: "Característica" },
+    { en: "RESPONSIBILITY", pt: "Responsabilidade" }, { en: "EXTRAORDINARY", pt: "Extraordinário" }, { en: "UNBELIEVABLE", pt: "Inacreditável" },
   ],
 };
 
@@ -48,6 +58,7 @@ function tryGenerate(words) {
   }
   const sorted = [...words].sort((a, b) => b.en.length - a.en.length);
   place(sorted[0].en, sorted[0].pt, 0, 0, "H");
+  let floatRow = 2;
   for (let idx = 1; idx < sorted.length; idx++) {
     const { en, pt } = sorted[idx];
     let done = false;
@@ -63,16 +74,22 @@ function tryGenerate(words) {
         }
       }
     }
+    if (!done) {
+      // não encontrou cruzamento: coloca isolada numa linha livre, pra garantir que todas apareçam
+      place(en, pt, floatRow, 0, "H");
+      floatRow += 2;
+    }
   }
   return { placed, grid };
 }
 
 function buildPuzzle(words) {
   let best = null;
-  for (let attempt = 0; attempt < 6; attempt++) {
+  for (let attempt = 0; attempt < 8; attempt++) {
     const shuffled = [...words].sort(() => Math.random() - 0.5);
     const result = tryGenerate(shuffled);
-    if (!best || result.placed.length > best.placed.length) best = result;
+    const crossings = result.placed.filter((p) => p.cells.some(([r, c]) => result.placed.some((q) => q !== p && q.cells.some(([r2, c2]) => r === r2 && c === c2)))).length;
+    if (!best || crossings > best.crossings) best = { ...result, crossings };
   }
   const { placed } = best;
   let minRow = Infinity, maxRow = -Infinity, minCol = Infinity, maxCol = -Infinity;
@@ -87,7 +104,12 @@ function buildPuzzle(words) {
   norm.forEach((p) => { p.number = numberOf[`${p.row},${p.col}`]; });
   const cellLetters = {};
   norm.forEach((p) => p.cells.forEach(([r, c], i) => { cellLetters[`${r},${c}`] = p.en[i]; }));
-  return { placements: norm, rows: maxRow - minRow + 1, cols: maxCol - minCol + 1, cellLetters };
+  // ordem de leitura (linha a linha) só das células ocupadas, pra avançar automaticamente
+  const orderedKeys = Object.keys(cellLetters).sort((a, b) => {
+    const [ar, ac] = a.split(",").map(Number), [br, bc] = b.split(",").map(Number);
+    return ar - br || ac - bc;
+  });
+  return { placements: norm, rows: maxRow - minRow + 1, cols: maxCol - minCol + 1, cellLetters, orderedKeys };
 }
 
 export default function Cruzadinha({ onExit }) {
@@ -96,6 +118,7 @@ export default function Cruzadinha({ onExit }) {
   const puzzle = useMemo(() => (level ? buildPuzzle(BANKS[level]) : null), [round, level]);
   const [answers, setAnswers] = useState({});
   const [checked, setChecked] = useState(false);
+  const inputRefs = useRef({});
 
   if (!level) return <LevelMenu accent={ACCENT} gameName="Cruzadinha" onExit={onExit} expertUnlocked={isExpertUnlocked(GAME_ID)} onSelect={(l) => { setLevel(l); setAnswers({}); setChecked(false); }} />;
 
@@ -108,6 +131,27 @@ export default function Cruzadinha({ onExit }) {
     const letter = value.slice(-1).toUpperCase().replace(/[^A-Z]/g, "");
     setAnswers((prev) => ({ ...prev, [key]: letter }));
     setChecked(false);
+    if (letter) {
+      const idx = puzzle.orderedKeys.indexOf(key);
+      const nextKey = puzzle.orderedKeys.slice(idx + 1).find((k) => !answers[k]);
+      if (nextKey && inputRefs.current[nextKey]) setTimeout(() => inputRefs.current[nextKey]?.focus(), 0);
+    }
+  }
+  function useHintLetter() {
+    const empty = puzzle.orderedKeys.filter((k) => (answers[k] || "").toUpperCase() !== puzzle.cellLetters[k]);
+    if (empty.length === 0) return;
+    const key = empty[Math.floor(Math.random() * empty.length)];
+    setAnswers((prev) => ({ ...prev, [key]: puzzle.cellLetters[key] }));
+  }
+  function useHintWord() {
+    const incomplete = puzzle.placements.filter((p) => p.cells.some(([r, c]) => (answers[`${r},${c}`] || "").toUpperCase() !== puzzle.cellLetters[`${r},${c}`]));
+    if (incomplete.length === 0) return;
+    const p = incomplete[Math.floor(Math.random() * incomplete.length)];
+    setAnswers((prev) => {
+      const next = { ...prev };
+      p.cells.forEach(([r, c]) => { next[`${r},${c}`] = puzzle.cellLetters[`${r},${c}`]; });
+      return next;
+    });
   }
   function restart() { setAnswers({}); setChecked(false); setRound((r) => r + 1); }
   function changeLevel() { setLevel(null); }
@@ -129,7 +173,7 @@ export default function Cruzadinha({ onExit }) {
             return (
               <div key={key} style={styles.cellWrap}>
                 {number && <span style={styles.cellNumber}>{number}</span>}
-                <input value={guess} onChange={(e) => handleInput(key, e.target.value)} maxLength={1}
+                <input ref={(el) => (inputRefs.current[key] = el)} value={guess} onChange={(e) => handleInput(key, e.target.value)} maxLength={1}
                   style={{ ...styles.cellInput, borderColor: checked ? (isCorrect ? "#6B9080" : guess ? "#C65D57" : "#D8D0BC") : "#D8D0BC", color: checked && isCorrect ? "#3E5C4C" : "#1B2735" }} />
               </div>
             );
@@ -139,8 +183,12 @@ export default function Cruzadinha({ onExit }) {
           <div style={styles.clueCol}><span style={styles.clueHeader}>Horizontais</span>{across.map((p) => <p key={p.en} style={styles.clueItem}>{p.number}. {p.pt}</p>)}</div>
           <div style={styles.clueCol}><span style={styles.clueHeader}>Verticais</span>{down.map((p) => <p key={p.en} style={styles.clueItem}>{p.number}. {p.pt}</p>)}</div>
         </div>
+        <div style={styles.hintRow}>
+          <button style={{ ...styles.ghostBtn, borderColor: ACCENT, color: ACCENT }} onClick={useHintLetter}>💡 Revelar uma letra</button>
+          <button style={{ ...styles.ghostBtn, borderColor: ACCENT, color: ACCENT }} onClick={useHintWord}>💡 Revelar uma palavra</button>
+        </div>
         {!allFilled || !checked ? (
-          <button style={{ ...styles.nextBtn, marginTop: 16, alignSelf: "flex-start", background: ACCENT }} onClick={() => setChecked(true)}>Verificar</button>
+          <button style={{ ...styles.nextBtn, marginTop: 12, alignSelf: "flex-start", background: ACCENT }} onClick={() => setChecked(true)}>Verificar</button>
         ) : null}
         {checked && allFilled && (
           <div style={styles.overActions}>
@@ -157,18 +205,20 @@ const styles = {
   wrap: { display: "flex", flexDirection: "column", gap: 14 },
   topBar: { display: "flex", justifyContent: "space-between", alignItems: "center", color: "#E7E2D3" },
   backBtn: { background: "none", border: "none", color: "#C9C2AC", fontSize: 12, cursor: "pointer", fontFamily: "'IBM Plex Mono', monospace", padding: 0 },
-  card: { background: "#F7F3E9", borderRadius: 4, padding: "20px 16px 18px", boxShadow: "0 12px 30px rgba(0,0,0,0.35)", border: "1px solid #D8D0BC", display: "flex", flexDirection: "column" },
+  card: { background: "#F7F3E9", borderRadius: 4, padding: "clamp(14px,4vw,20px) clamp(10px,3vw,16px) 18px", boxShadow: "0 12px 30px rgba(0,0,0,0.35)", border: "1px solid #D8D0BC", display: "flex", flexDirection: "column" },
   entryNo: { fontSize: 11, letterSpacing: 1 },
   intro: { fontSize: 12.5, color: "#5A6270", marginTop: 6, marginBottom: 14, lineHeight: 1.5 },
   grid: { display: "grid", gap: 2, background: "#D8D0BC", padding: 2, borderRadius: 3 },
   emptyCell: { aspectRatio: "1", background: "transparent" },
   cellWrap: { position: "relative", aspectRatio: "1" },
-  cellNumber: { position: "absolute", top: 1, left: 2, fontSize: 8, color: "#B08A3E", zIndex: 1 },
-  cellInput: { width: "100%", height: "100%", textAlign: "center", border: "1.5px solid", fontSize: 13, fontFamily: "'IBM Plex Mono', monospace", fontWeight: 600, textTransform: "uppercase", background: "#FFFFFF", padding: 0 },
+  cellNumber: { position: "absolute", top: 1, left: 2, fontSize: 7, color: "#B08A3E", zIndex: 1 },
+  cellInput: { width: "100%", height: "100%", textAlign: "center", border: "1.5px solid", fontSize: "clamp(9px,2.6vw,13px)", fontFamily: "'IBM Plex Mono', monospace", fontWeight: 600, textTransform: "uppercase", background: "#FFFFFF", padding: 0 },
   cluesRow: { display: "flex", gap: 20, marginTop: 16, flexWrap: "wrap" },
   clueCol: { flex: 1, minWidth: 140 },
   clueHeader: { fontFamily: "'Fraunces', serif", fontSize: 13, fontWeight: 700, color: "#1B2735" },
   clueItem: { fontSize: 11.5, color: "#5A6270", margin: "4px 0" },
+  hintRow: { display: "flex", gap: 8, flexWrap: "wrap", marginTop: 16 },
+  ghostBtn: { background: "none", border: "1.5px solid", borderRadius: 3, padding: "8px 12px", fontSize: 11.5, fontFamily: "'IBM Plex Mono', monospace", cursor: "pointer" },
   nextBtn: { color: "#F7F3E9", border: "none", borderRadius: 3, padding: "10px 16px", fontSize: 13, fontFamily: "'IBM Plex Mono', monospace", cursor: "pointer" },
   overActions: { marginTop: 14, display: "flex", flexDirection: "column", alignItems: "center", gap: 10 },
   doneText: { fontFamily: "'Fraunces', serif", fontSize: 16, textAlign: "center" },

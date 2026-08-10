@@ -69,6 +69,13 @@ export default function OucaEscreva({ onExit }) {
   if (checked === true && level === "advanced") unlockExpert(GAME_ID);
 
   function verify() { setChecked(typed.trim().toLowerCase() === current.en); }
+  function useHintLetter() {
+    if (checked === true) return;
+    const revealedSoFar = typed.length;
+    if (revealedSoFar >= current.en.length) return;
+    setTyped(current.en.slice(0, revealedSoFar + 1));
+    setChecked(null);
+  }
   function next() { setCurrent((c) => pickWord(BANKS[level], c.en)); setTyped(""); setChecked(null); setShowHint(false); }
   function changeLevel() { setLevel(null); }
 
@@ -87,7 +94,8 @@ export default function OucaEscreva({ onExit }) {
           {checked !== true && (
             <>
               <button style={{ ...styles.nextBtn, background: ACCENT }} onClick={verify}>Verificar</button>
-              <button style={styles.ghostBtn} onClick={() => setShowHint(true)}>Dica</button>
+              <button style={styles.ghostBtn} onClick={() => setShowHint(true)}>Dica (tradução)</button>
+              <button style={styles.ghostBtn} onClick={useHintLetter}>💡 Revelar uma letra</button>
             </>
           )}
           {checked === true && (
