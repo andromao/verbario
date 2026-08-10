@@ -4,34 +4,43 @@ import { isExpertUnlocked, unlockExpert } from "../utils/progress";
 
 const GAME_ID = "criptograma";
 const ACCENT = "#8B7FD9";
+const WORDS_PER_ROUND = 10;
 
 const BANKS = {
   superbeginner: [
     { en: "CAT", pt: "gato" }, { en: "DOG", pt: "cachorro" }, { en: "SUN", pt: "sol" }, { en: "RED", pt: "vermelho" }, { en: "BIG", pt: "grande" },
     { en: "RUN", pt: "correr" }, { en: "HAT", pt: "chapéu" }, { en: "TEN", pt: "dez" }, { en: "EAT", pt: "comer" }, { en: "YES", pt: "sim" },
+    { en: "BED", pt: "cama" }, { en: "CAR", pt: "carro" }, { en: "ARM", pt: "braço" }, { en: "EAR", pt: "orelha" },
   ],
   beginner: [
     { en: "APPLE", pt: "maçã" }, { en: "HOUSE", pt: "casa" }, { en: "WATER", pt: "água" }, { en: "LIGHT", pt: "luz" }, { en: "HAPPY", pt: "feliz" },
     { en: "MUSIC", pt: "música" }, { en: "DREAM", pt: "sonho" }, { en: "SMILE", pt: "sorriso" }, { en: "BEACH", pt: "praia" }, { en: "CLOUD", pt: "nuvem" },
+    { en: "STORM", pt: "tempestade" }, { en: "TABLE", pt: "mesa" }, { en: "RIVER", pt: "rio" }, { en: "NIGHT", pt: "noite" },
   ],
   intermediate: [
     { en: "GARDEN", pt: "jardim" }, { en: "PICTURE", pt: "figura" }, { en: "WEATHER", pt: "clima" }, { en: "JOURNEY", pt: "jornada" }, { en: "MORNING", pt: "manhã" },
     { en: "KITCHEN", pt: "cozinha" }, { en: "ANIMAL", pt: "animal" }, { en: "PEOPLE", pt: "pessoas" }, { en: "FRIEND", pt: "amigo" }, { en: "STREET", pt: "rua" },
+    { en: "DANGER", pt: "perigo" }, { en: "ENGINE", pt: "motor" }, { en: "NATURE", pt: "natureza" }, { en: "GREEN", pt: "verde" },
   ],
   advanced: [
     { en: "WONDERFUL", pt: "maravilhoso" }, { en: "DISTANCE", pt: "distância" }, { en: "CALENDAR", pt: "calendário" }, { en: "FAVORITE", pt: "favorito" },
     { en: "BUILDING", pt: "prédio / construção" }, { en: "HOSPITAL", pt: "hospital" }, { en: "TRIANGLE", pt: "triângulo" }, { en: "UMBRELLA", pt: "guarda-chuva" },
-    { en: "MOUNTAIN", pt: "montanha" }, { en: "ELEPHANT", pt: "elefante" },
+    { en: "MOUNTAIN", pt: "montanha" }, { en: "ELEPHANT", pt: "elefante" }, { en: "ADVENTURE", pt: "aventura" }, { en: "CHALLENGE", pt: "desafio" },
   ],
   expert: [
     { en: "CONSCIOUSNESS", pt: "consciência" }, { en: "ENTREPRENEUR", pt: "empreendedor" }, { en: "SURVEILLANCE", pt: "vigilância" }, { en: "PHOTOGRAPHER", pt: "fotógrafo" },
     { en: "REFRIGERATOR", pt: "geladeira" }, { en: "ACCOMPLISHMENT", pt: "realização" }, { en: "SOPHISTICATED", pt: "sofisticado" }, { en: "CHARACTERISTIC", pt: "característica" },
-    { en: "RESPONSIBILITY", pt: "responsabilidade" }, { en: "EXTRAORDINARY", pt: "extraordinário" },
+    { en: "RESPONSIBILITY", pt: "responsabilidade" }, { en: "EXTRAORDINARY", pt: "extraordinário" }, { en: "UNBELIEVABLE", pt: "inacreditável" },
   ],
 };
 
-function buildSharedCipher(words) {
-  const uniqueLetters = [...new Set(words.join("").split(""))];
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+function buildSharedCipher(wordsEn) {
+  const uniqueLetters = [...new Set(wordsEn.join("").split(""))];
   const codes = [...Array(26).keys()].map((n) => n + 1);
   for (let i = codes.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [codes[i], codes[j]] = [codes[j], codes[i]]; }
   const letterToCode = {};
@@ -42,8 +51,8 @@ function buildSharedCipher(words) {
 export default function Criptograma({ onExit }) {
   const [level, setLevel] = useState(null);
   const [round, setRound] = useState(0);
-  const words = level ? BANKS[level] : [];
-  const letterToCode = useMemo(() => (level ? buildSharedCipher(words.map((w) => w.en)) : {}), [level, round]);
+  const words = useMemo(() => (level ? shuffle(BANKS[level]).slice(0, Math.min(WORDS_PER_ROUND, BANKS[level].length)) : []), [level, round]);
+  const letterToCode = useMemo(() => (level ? buildSharedCipher(words.map((w) => w.en)) : {}), [words]);
   const codeToLetter = useMemo(() => {
     const map = {};
     Object.entries(letterToCode).forEach(([l, c]) => { map[c] = l; });
@@ -60,9 +69,16 @@ export default function Criptograma({ onExit }) {
     );
   }
 
-  const allCodes = [...new Set(words.join("").split("").map((l) => letterToCode[l]))];
-  const solved = allCodes.every((c) => (guesses[c] || "").toUpperCase() === codeToLetter[c]);
+  const allCodes = [...new Set(words.map((w) => w.en).join("").split("").map((l) => letterToCode[l]))];
+  const solved = allCodes.length > 0 && allCodes.every((c) => (guesses[c] || "").toUpperCase() === codeToLetter[c]);
   if (solved && level === "advanced") unlockExpert(GAME_ID);
+
+  const solvedCount = words.filter((w) => [...w.en].every((l) => (guesses[letterToCode[l]] || "").toUpperCase() === l)).length;
+  const usedHint = revealed.size > 0;
+  const score = Math.round((solvedCount / words.length) * 100) - (usedHint ? 10 : 0);
+
+  const allOccurrences = [];
+  words.forEach((w, wi) => [...w.en].forEach((l, li) => allOccurrences.push({ refKey: `${wi}-${li}`, code: letterToCode[l] })));
 
   function handleGuess(code, value, refKey) {
     const letter = value.slice(-1).toUpperCase().replace(/[^A-Z]/g, "");
@@ -95,16 +111,15 @@ export default function Criptograma({ onExit }) {
       return next;
     });
   }
-  function restart() { setGuesses({}); setRevealed(new Set()); setRound((r) => r + 1); }
+  function nextRound() { setGuesses({}); setRevealed(new Set()); setRound((r) => r + 1); }
   function changeLevel() { setLevel(null); }
-
-  // lista linear de todas as ocorrências de letra, pra saber qual input focar em seguida
-  const allOccurrences = [];
-  words.forEach((w, wi) => [...w.en].forEach((l, li) => allOccurrences.push({ refKey: `${wi}-${li}`, code: letterToCode[l] })));
 
   return (
     <div style={styles.wrap}>
-      <div style={styles.topBar}><button style={styles.backBtn} onClick={changeLevel}>← nível</button></div>
+      <div style={styles.topBar}>
+        <button style={styles.backBtn} onClick={changeLevel}>← nível</button>
+        <span style={{ ...styles.hudItem, color: ACCENT }}>{solvedCount}/{words.length}</span>
+      </div>
       <div style={styles.card}>
         <span style={{ ...styles.entryNo, color: ACCENT, fontWeight: 700 }}>CRIPTOGRAMA</span>
         <p style={styles.hint}>Todas as palavras usam o mesmo código: cada número é sempre a mesma letra.</p>
@@ -138,8 +153,8 @@ export default function Criptograma({ onExit }) {
           </div>
         ) : (
           <div style={styles.overActions}>
-            <span style={{ ...styles.doneText, color: ACCENT }}>Decifrou tudo! 🎉{level === "advanced" ? " Nível Mestre destravado!" : ""}</span>
-            <button style={{ ...styles.nextBtn, background: ACCENT }} onClick={restart}>Jogar de novo</button>
+            <span style={{ ...styles.doneText, color: ACCENT }}>Decifrou tudo! 🎉 {Math.max(score, 0)} pts{level === "advanced" ? " · Nível Mestre destravado!" : ""}</span>
+            <button style={{ ...styles.nextBtn, background: ACCENT }} onClick={nextRound}>Próximo criptograma →</button>
           </div>
         )}
       </div>
@@ -151,6 +166,7 @@ const styles = {
   wrap: { display: "flex", flexDirection: "column", gap: 14 },
   topBar: { display: "flex", justifyContent: "space-between", alignItems: "center", color: "#E7E2D3" },
   backBtn: { background: "none", border: "none", color: "#C9C2AC", fontSize: 12, cursor: "pointer", fontFamily: "'IBM Plex Mono', monospace", padding: 0 },
+  hudItem: { fontSize: 11, fontWeight: 700 },
   card: { background: "#F7F3E9", borderRadius: 4, padding: "clamp(14px,4vw,20px) clamp(12px,4vw,20px) 18px", boxShadow: "0 12px 30px rgba(0,0,0,0.35)", border: "1px solid #D8D0BC", display: "flex", flexDirection: "column" },
   entryNo: { fontSize: 11, letterSpacing: 1 },
   hint: { fontSize: 12.5, color: "#5A6270", marginTop: 6, marginBottom: 16, lineHeight: 1.5 },
@@ -164,6 +180,6 @@ const styles = {
   hintRow: { display: "flex", gap: 8, flexWrap: "wrap", marginTop: 18 },
   ghostBtn: { background: "none", border: "1.5px solid", borderRadius: 3, padding: "8px 12px", fontSize: 11.5, fontFamily: "'IBM Plex Mono', monospace", cursor: "pointer" },
   overActions: { marginTop: 18, display: "flex", flexDirection: "column", alignItems: "center", gap: 10 },
-  doneText: { fontFamily: "'Fraunces', serif", fontSize: 16, textAlign: "center" },
+  doneText: { fontFamily: "'Fraunces', serif", fontSize: 15, textAlign: "center" },
   nextBtn: { color: "#F7F3E9", border: "none", borderRadius: 3, padding: "10px 16px", fontSize: 13, fontFamily: "'IBM Plex Mono', monospace", cursor: "pointer" },
 };

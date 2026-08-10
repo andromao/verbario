@@ -51,6 +51,8 @@ export default function Memoria({ onExit }) {
   if (!level) return <LevelMenu accent={ACCENT} gameName="Memória" onExit={onExit} expertUnlocked={isExpertUnlocked(GAME_ID)} onSelect={(l) => { setLevel(l); setFlipped([]); setMatched(new Set()); setMoves(0); }} />;
 
   const won = matched.size === pairs.length;
+  const perfectMoves = pairs.length;
+  const score = won ? Math.max(100 - Math.max(moves - perfectMoves, 0) * 8, 10) : 0;
   if (won && level === "advanced") unlockExpert(GAME_ID);
 
   function useHint() {
@@ -101,7 +103,7 @@ export default function Memoria({ onExit }) {
         )}
         {won && (
           <div style={styles.overActions}>
-            <span style={{ ...styles.doneText, color: ACCENT }}>Todos os pares! 🎉 ({moves} jogadas){level === "advanced" ? " Nível Mestre destravado!" : ""}</span>
+            <span style={{ ...styles.doneText, color: ACCENT }}>Todos os pares! 🎉 {score} pts ({moves} jogadas){level === "advanced" ? " · Nível Mestre destravado!" : ""}</span>
             <button style={{ ...styles.nextBtn, background: ACCENT }} onClick={restart}>Jogar de novo</button>
           </div>
         )}

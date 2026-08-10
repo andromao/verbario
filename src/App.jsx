@@ -13,6 +13,7 @@ import CompleteFrase from "./games/CompleteFrase";
 import OucaEscreva from "./games/OucaEscreva";
 import VerdadeiroFalso from "./games/VerdadeiroFalso";
 import SinonimoAntonimo from "./games/SinonimoAntonimo";
+import CompleteDialogo from "./games/CompleteDialogo";
 
 const GAMES = [
   { id: "verbario", title: "Verbário", desc: "Vocabulário por níveis, em forma de dicionário", available: true, color: "#E8A33D" },
@@ -26,6 +27,7 @@ const GAMES = [
   { id: "ouca-escreva", title: "Ouça e Escreva", desc: "Ouça a palavra em inglês e escreva o que entendeu", available: true, color: "#B23A48" },
   { id: "verdadeiro-falso", title: "Verdadeiro ou Falso", desc: "Julgue se a afirmação sobre a palavra está certa", available: true, color: "#2E9B8F" },
   { id: "sinonimo-antonimo", title: "Sinônimo e Antônimo", desc: "Encontre a palavra com sentido igual ou oposto", available: true, color: "#C77D3E" },
+  { id: "complete-dialogo", title: "Complete o Diálogo", desc: "Escolha a resposta que faz sentido numa conversa real", available: true, color: "#5B8A72" },
 ];
 
 export default function App() {
@@ -185,6 +187,7 @@ export default function App() {
         {screen === "game" && activeGame === "ouca-escreva" && <OucaEscreva onExit={exitGame} />}
         {screen === "game" && activeGame === "verdadeiro-falso" && <VerdadeiroFalso onExit={exitGame} />}
         {screen === "game" && activeGame === "sinonimo-antonimo" && <SinonimoAntonimo onExit={exitGame} />}
+        {screen === "game" && activeGame === "complete-dialogo" && <CompleteDialogo onExit={exitGame} />}
 
         <div style={styles.adSlot}><span style={styles.adLabel}>espaço reservado para anúncio (banner)</span></div>
       </div>

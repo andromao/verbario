@@ -7,9 +7,11 @@ const ACCENT = "#2E9B8F";
 
 const BANKS = {
   superbeginner: [
-    { text: '"Cat" significa gato.', answer: true }, { text: '"Dog" significa gato.', answer: false },
-    { text: '"Red" é uma cor.', answer: true }, { text: '"Run" significa dormir.', answer: false },
-    { text: '"Big" significa grande.', answer: true },
+    { text: '"Happy" significa feliz.', answer: true }, { text: '"Angry" significa calmo.', answer: false },
+    { text: '"Fast" é o oposto de "slow".', answer: true }, { text: '"Soothe" significa irritar.', answer: false },
+    { text: '"Sturdy" significa robusto.', answer: true }, { text: '"Clutter" significa ordem.', answer: false },
+    { text: '"Smile" significa sorriso.', answer: true }, { text: '"Cloud" significa nuvem.', answer: true },
+    { text: '"Dream" significa pesadelo.', answer: false }, { text: '"Beach" significa montanha.', answer: false },
   ],
   beginner: [
     { text: '"Happy" significa feliz.', answer: true }, { text: '"Angry" significa calmo.', answer: false },
@@ -20,15 +22,22 @@ const BANKS = {
     { text: '"Linger" significa demorar-se.', answer: true }, { text: '"Thrive" significa desistir.', answer: false },
     { text: '"Blunt" significa educado.', answer: false }, { text: '"Yearn" significa ansiar.', answer: true },
     { text: '"Murky" significa claro.', answer: false }, { text: '"Haggle" significa pechinchar.', answer: true },
+    { text: '"Grasp" significa ignorar.', answer: false }, { text: '"Dwell" significa habitar.', answer: true },
+    { text: '"Shrug" significa dar de ombros.', answer: true }, { text: '"Outdated" significa moderno.', answer: false },
   ],
   advanced: [
     { text: '"Vindicate" significa condenar.', answer: false }, { text: '"Meticulous" significa cuidadoso nos detalhes.', answer: true },
     { text: '"Squander" significa economizar.', answer: false }, { text: '"Relentless" significa incessante.', answer: true },
     { text: '"Disparage" significa elogiar.', answer: false }, { text: '"Candid" significa sincero.', answer: true },
+    { text: '"Placate" significa provocar.', answer: false }, { text: '"Ambivalent" significa decidido.', answer: false },
+    { text: '"Capricious" significa instável.', answer: true }, { text: '"Wonderful" significa maravilhoso.', answer: true },
   ],
   expert: [
     { text: '"Ubiquitous" significa raro.', answer: false }, { text: '"Ephemeral" significa passageiro.', answer: true },
     { text: '"Surreptitious" significa óbvio.', answer: false }, { text: '"Cacophony" significa uma barulheira desagradável.', answer: true },
+    { text: '"Quintessential" significa atípico.', answer: false }, { text: '"Juxtaposition" significa justaposição.', answer: true },
+    { text: '"Vindictive" significa generoso.', answer: false }, { text: '"Consciousness" significa consciência.', answer: true },
+    { text: '"Entrepreneur" significa empregado.', answer: false }, { text: '"Sophisticated" significa sofisticado.', answer: true },
   ],
 };
 

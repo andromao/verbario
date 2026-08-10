@@ -85,6 +85,7 @@ export default function CacaPalavras({ onExit }) {
   const [path, setPath] = useState([]);
   const [foundCells, setFoundCells] = useState(new Set());
   const [foundWords, setFoundWords] = useState(new Set());
+  const [hintsUsed, setHintsUsed] = useState(0);
 
   const cellFromPoint = useCallback((x, y) => {
     const el = document.elementFromPoint(x, y);
@@ -95,6 +96,7 @@ export default function CacaPalavras({ onExit }) {
   if (!level) return <LevelMenu accent={ACCENT} gameName="Caça-palavras" onExit={onExit} expertUnlocked={isExpertUnlocked(GAME_ID)} onSelect={(l) => setLevel(l)} />;
 
   const allFound = foundWords.size === bank.words.length;
+  const score = Math.max(foundWords.size * 10 - hintsUsed * 5, 0);
   if (allFound && level === "advanced") unlockExpert(GAME_ID);
 
   function markWordFound(match) {
@@ -116,6 +118,7 @@ export default function CacaPalavras({ onExit }) {
     const remaining = placements.filter((p) => !foundWords.has(p.en));
     if (remaining.length === 0) return;
     markWordFound(remaining[Math.floor(Math.random() * remaining.length)]);
+    setHintsUsed((h) => h + 1);
   }
 
   function handlePointerDown(r, c, e) {
@@ -134,7 +137,7 @@ export default function CacaPalavras({ onExit }) {
 
   function restart() {
     setStart(null); setPath([]); setDragging(false);
-    setFoundCells(new Set()); setFoundWords(new Set());
+    setFoundCells(new Set()); setFoundWords(new Set()); setHintsUsed(0);
     setRound((r) => r + 1);
   }
   function changeLevel() { setLevel(null); setFoundCells(new Set()); setFoundWords(new Set()); }
@@ -145,7 +148,7 @@ export default function CacaPalavras({ onExit }) {
     <div style={styles.wrap}>
       <div style={styles.topBar}>
         <button style={styles.backBtn} onClick={changeLevel}>← nível</button>
-        <span style={{ ...styles.hudItem, color: ACCENT }}>{foundWords.size}/{bank.words.length}</span>
+        <span style={{ ...styles.hudItem, color: ACCENT }}>{foundWords.size}/{bank.words.length} · {score} pts</span>
       </div>
       <div style={styles.card}>
         <span style={{ ...styles.entryNo, color: ACCENT }}>CAÇA-PALAVRAS</span>
@@ -172,7 +175,7 @@ export default function CacaPalavras({ onExit }) {
         )}
         {allFound && (
           <div style={styles.overActions}>
-            <span style={{ ...styles.doneText, color: ACCENT }}>Encontrou todas! 🎉{level === "advanced" ? " Nível Mestre destravado!" : ""}</span>
+            <span style={{ ...styles.doneText, color: ACCENT }}>Encontrou todas! 🎉 {score} pts{level === "advanced" ? " · Nível Mestre destravado!" : ""}</span>
             <button style={{ ...styles.nextBtn, background: ACCENT }} onClick={restart}>Jogar de novo</button>
           </div>
         )}
